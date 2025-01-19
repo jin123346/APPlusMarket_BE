@@ -1,0 +1,32 @@
+spring:
+    application:
+        name: Aplusmarket
+    jackson:
+        time-zone: Asia/Seoul
+    devtools:
+        livereload:
+            enabled: true
+    datasource:
+        url: jdbc:mysql://localhost:3306/applusmarket?serverTimezone=Asia/Seoul
+        username: root
+        password: 1234
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        mybatis:
+            mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
+            config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
+            type-aliases-package: com.aplus.aplusmarket # TypeAlias 사용할 패키지 경로
+
+    jpa:
+        database: mysql
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.MySQL8Dialect
+                format_sql: true
+                use_sql_comments: true
+        show-sql: true
+server:
+    port: 8080
+    servlet:
+        context-path: /
