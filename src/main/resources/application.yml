@@ -11,10 +11,7 @@ spring:
         username: root
         password: 1234
         driver-class-name: com.mysql.cj.jdbc.Driver
-        mybatis:
-            mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
-            config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
-            type-aliases-package: com.aplus.aplusmarket # TypeAlias 사용할 패키지 경로
+
 
     jpa:
         database: mysql
@@ -26,7 +23,18 @@ spring:
                 format_sql: true
                 use_sql_comments: true
         show-sql: true
+
+mybatis:
+    mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
+    config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
+    type-aliases-package: com.aplus.aplusmarket.entity # TypeAlias 사용할 패키지 경로
+
+
 server:
     port: 8080
     servlet:
         context-path: /
+
+logging:
+    level:
+        org.mybatis: DEBUG
