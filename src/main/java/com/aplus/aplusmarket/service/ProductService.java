@@ -1,13 +1,19 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.dto.product.ProductDTO;
+import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -15,12 +21,52 @@ import java.util.List;
 public class ProductService {
 
     private final ProductMapper productMapper;
-
+    
+    //파일 업로드 경로
+    @Value("${spring.servlet.multipart.location}")
+    private String uploadPath;
+    
     // Insert Product
-    public boolean InsertProduct(ProductDTO productDTO) {
-        Product product = toEntity(productDTO); // DTO -> Entity 변환
-        boolean result = productMapper.InsertProduct(product); // Insert 실행
+    public boolean InsertProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
+        Product product = toEntity(productDTO);
+
+        boolean result = productMapper.InsertProduct(product);
         log.info("Insert Product Result: " + result);
+
+        File productFolder = new File(uploadPath, product.getId().toString());
+        if (!productFolder.exists()) {
+            productFolder.mkdirs();
+        }
+
+        if (images != null) {
+            for (MultipartFile file : images) {
+                // 원본 파일명에서 확장자 추출
+                String originalName = file.getOriginalFilename();
+                String extension = "";
+                if (originalName != null && originalName.contains(".")) {
+                    extension = originalName.substring(originalName.lastIndexOf("."));
+                }
+
+                // UUID 파일명 생성
+                String uuidName = UUID.randomUUID().toString() + extension;
+
+                // 최종 저장 경로
+                File dest = new File(productFolder, uuidName);
+
+                // 파일 저장 (disk write)
+                file.transferTo(dest);
+
+                log.info("Saved file: " + dest.getAbsolutePath());
+
+                // [선택] 이미지 메타데이터 DB에 저장
+                // Product_Images entity = new Product_Images();
+                // entity.setProductId(product.getId());
+                // entity.setOriginalName(originalName);
+                // entity.setUuidName(uuidName);
+                // productImagesMapper.insertImage(entity);
+            }
+        }
+
         return result;
     }
 
@@ -43,15 +89,10 @@ public class ProductService {
     }
 
     // Update Product
-    public ProductDTO UpdateProduct(ProductDTO productDTO) {
+    public boolean UpdateProduct(ProductDTO productDTO) {
         Product product = toEntity(productDTO); // DTO -> Entity 변환
         boolean result = productMapper.UpdateProduct(product); // Update 실행
-        if (result) {
-            log.info("Product Updated: " + product);
-            return toDTO(product); // 성공 시 DTO 반환
-        }
-        log.warn("Failed to update product: " + productDTO);
-        return null;
+        return result; // 성공 시 DTO 반환
     }
 
     // Delete Product by ID

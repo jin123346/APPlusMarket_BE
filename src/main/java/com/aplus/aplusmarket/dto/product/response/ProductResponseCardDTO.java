@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ProductResponseCardDTO {
     private Long id;
     private String title;
-    private String productImages; // JSON 문자열로 처리
+    private String productImage;
     private String productName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
