@@ -5,8 +5,11 @@ import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -30,14 +33,16 @@ public class ProductController {
         return productDTO;
     }
     //상품 등록
-    @PostMapping("/inssert")
-    public boolean InsertProduct(@RequestBody ProductDTO productDTO){
+    @PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public boolean insertProduct(
+            @ModelAttribute ProductDTO productDTO,
+            @RequestPart("images") List<MultipartFile> images) throws IOException {
         log.info("productDTO.getProduct_Images() : " + productDTO.getProductImages());
-        boolean check = productService.InsertProduct(productDTO);
+        boolean check = productService.InsertProduct(productDTO,images);
         return check;
     }
     //상품 삭제
-    @DeleteMapping("/deleteproduct/{id}")
+    @DeleteMapping("/delete/{id}")
     public boolean DeleteProductById(@PathVariable String id) {
         boolean check = productService.DeleteProductById(id);
         return check;
@@ -51,5 +56,9 @@ public class ProductController {
         
         return productService.SelectProductsByPage(page,pageSize);
     }
-
+    @PutMapping("/update")
+    public boolean updateProduct(@RequestBody ProductDTO productDTO){
+        boolean check = productService.UpdateProduct(productDTO);
+        return check;
+    }
 }
