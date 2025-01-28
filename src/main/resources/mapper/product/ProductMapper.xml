@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aplus.aplusmarket.mapper.product.ProductMapper">
+
+    <!-- INSERT -->
+    <insert id="InsertProduct" parameterType="com.aplus.aplusmarket.entity.Product" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_product (title, product_images, product_name, content, register_location, register_ip,
+                             created_at, updated_at, reload_at, price, status, deleted_at, seller_id,
+                             is_negotiable, is_possible_meet_you, category)
+        VALUES (#{title}, #{productImages}, #{productName}, #{content}, #{registerLocation}, #{registerIp},
+                NOW(), NOW(), #{reloadAt}, #{price}, #{status}, #{deletedAt}, #{sellerId},
+                #{isNegotiable}, #{isPossibleMeetYou}, #{category})
+    </insert>
+
+    <!-- SELECT BY ID -->
+    <select id="SelectProductById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product">
+        SELECT * FROM tb_product WHERE id = #{id}
+    </select>
+
+    <!-- SELECT ALL -->
+    <select id="SelectAllProducts" resultType="com.aplus.aplusmarket.entity.Product">
+            SELECT * FROM tb_product
+    </select>
+
+    <!-- UPDATE -->
+<!--    <update id="UpdateProduct" parameterType="com.aplus.aplusmarket.entity.Product">-->
+<!--        UPDATE tb_product-->
+<!--        SET title = #{title}, product_images = #{productImages}, product_name = #{productName},-->
+<!--            content = #{content}, register_location = #{registerLocation}, register_ip = #{registerIp},-->
+<!--            updated_at = NOW(), reload_at = NOW(), price = #{price}, status = #{status},-->
+<!--            seller_id = #{sellerId}, is_negotiable = #{isNegotiable},-->
+<!--            is_possible_meet_you = #{isPossibleMeetYou}, category = #{category}-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+    <update id="UpdateProduct" parameterType="com.aplus.aplusmarket.entity.Product">
+        UPDATE tb_product
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="productImages != null">product_images = #{productImages},</if>
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="registerLocation != null">register_location = #{registerLocation},</if>
+            <if test="registerIp != null">register_ip = #{registerIp},</if>
+            updated_at = NOW(),
+            <if test="reloadAt != null">reload_at = #{reloadAt},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="sellerId != null">seller_id = #{sellerId},</if>
+            <if test="isNegotiable != null">is_negotiable = #{isNegotiable},</if>
+            <if test="isPossibleMeetYou != null">is_possible_meet_you = #{isPossibleMeetYou},</if>
+            <if test="category != null">category = #{category},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <!-- DELETE -->
+    <delete id="DeleteProduct" parameterType="long">
+        DELETE FROM tb_product WHERE id = #{id}
+    </delete>
+    <select id="SelectProductsPage" resultType="com.aplus.aplusmarket.entity.Product">
+        SELECT id,title,product_images ,product_name ,price,status,seller_id,is_negotiable,is_possible_meet_you,category FROM tb_product
+        ORDER BY created_at DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+</mapper>
