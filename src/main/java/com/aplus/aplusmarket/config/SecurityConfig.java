@@ -51,17 +51,13 @@ public class SecurityConfig  implements WebMvcConfigurer {
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**").permitAll()// 인증 없이 허용할 경로
-                .anyRequest().permitAll()
+                        .requestMatchers("/**").permitAll()// 인증 없이 허용할 경로
+                        .anyRequest().permitAll()
                 //.anyRequest().authentication()  // 나머지 요청은 인증 필요
                 )
-
                 .logout(logout -> logout
                         .logoutSuccessUrl("/").permitAll() // 로그아웃 후 리다이렉트 경로
-                )
-                ;
-
-        ;
+                );
 
         return http.build();
 
@@ -69,9 +65,14 @@ public class SecurityConfig  implements WebMvcConfigurer {
 
     @Bean
     protected CorsConfigurationSource corsConfigurationSource(){
+        System.out.println("corsConfigurationSource@222222222222222222222");
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://10.0.2.2:8080","http://192.168.*.*:8080"));
-//        corsConfiguration.addAllowedOrigin("http://192.168.0.0/16:8080");
+//        corsConfiguration.setAllowedOriginPatterns(List.of(
+//                "http://10.0.2.2:8080",
+//                "http://192.168.*.*:8080",
+//                "http://127.0.0.1:8080",
+//                "http://localhost:8080"
+//        ));
         corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         corsConfiguration.addAllowedHeader("Authorization");
@@ -80,8 +81,8 @@ public class SecurityConfig  implements WebMvcConfigurer {
         corsConfiguration.addAllowedHeader("X-Requested-With");
         corsConfiguration.addAllowedHeader("Cache-Control");
         corsConfiguration.addAllowedHeader("X-Custom-Header");
-//        corsConfiguration.setAllowCredentials(true); // 쿠키 허용
-        corsConfiguration.setAllowCredentials(false); // 쿠키 허용
+        //corsConfiguration.setAllowCredentials(true); // 쿠키 허용
+        corsConfiguration.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
 
