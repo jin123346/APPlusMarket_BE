@@ -26,6 +26,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+    2025.1.25 하진희 security 설정
+    2025.1.29 하진희 cors 일시적 전체 허용 ( chrome 사용을 위해서 허용함)
+ */
+
 
 @RequiredArgsConstructor
 @Log4j2
@@ -65,7 +70,9 @@ public class SecurityConfig  implements WebMvcConfigurer {
     @Bean
     protected CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://10.0.2.2:8080"));
+        corsConfiguration.setAllowedOriginPatterns(List.of("http://10.0.2.2:8080","http://192.168.*.*:8080"));
+//        corsConfiguration.addAllowedOrigin("http://192.168.0.0/16:8080");
+        corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         corsConfiguration.addAllowedHeader("Authorization");
         corsConfiguration.addAllowedHeader("Content-Type");
@@ -73,7 +80,8 @@ public class SecurityConfig  implements WebMvcConfigurer {
         corsConfiguration.addAllowedHeader("X-Requested-With");
         corsConfiguration.addAllowedHeader("Cache-Control");
         corsConfiguration.addAllowedHeader("X-Custom-Header");
-        corsConfiguration.setAllowCredentials(true); // 쿠키 허용
+//        corsConfiguration.setAllowCredentials(true); // 쿠키 허용
+        corsConfiguration.setAllowCredentials(false); // 쿠키 허용
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
 

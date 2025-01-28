@@ -26,6 +26,10 @@ spring:
                 format_sql: true
                 use_sql_comments: true
         show-sql: true
+    servlet:
+        multipart:
+            enabled: true
+            location: uploads/
 
 mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
@@ -38,6 +42,7 @@ server:
     servlet:
         context-path: /
     address: 0.0.0.0
+
 
 logging:
     level:

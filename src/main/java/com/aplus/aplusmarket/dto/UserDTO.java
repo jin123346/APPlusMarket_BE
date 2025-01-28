@@ -21,7 +21,7 @@ public class UserDTO {
     private String email;
     private String hp;
     private String profileImg;
-    private String nickname;
+    private String nickName;
     private String name;
     private String  status="ACTIVE"; // enum 변경할 예정
     private long payBalance=0;
@@ -52,7 +52,7 @@ public class UserDTO {
                 .reportCount(0)
                 .currentRate(0)
                 .createdAt(createdAt)
-                .nickname(nickname)
+                .nickname(nickName)
                 .build();
 
 

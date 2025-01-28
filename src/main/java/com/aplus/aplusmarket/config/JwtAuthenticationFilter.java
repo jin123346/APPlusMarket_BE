@@ -18,6 +18,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/*
+    2025.1.26 하진희 jwt 필터 구성
+*/
+
 @Log4j2
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

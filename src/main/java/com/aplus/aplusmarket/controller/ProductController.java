@@ -17,6 +17,7 @@ import java.util.List;
 @Log4j2
 @RequestMapping("/product")
 public class ProductController {
+
     private final ProductService productService;
     //상품 전체 가지고 오기
     @GetMapping("/list")
