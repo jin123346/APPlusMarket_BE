@@ -72,7 +72,7 @@ public class AuthService {
                     cookie.setMaxAge(60*60*24*7);
                     resp.addCookie(cookie);
                     authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUid(), loginRequest.getPassword()));
-
+                    log.info("로그인 성공 아이디 : {}", loginRequest.getUid());
                     return new DataResponseDTO<>(tokens,1000,"로그인 성공");
                 }
 
