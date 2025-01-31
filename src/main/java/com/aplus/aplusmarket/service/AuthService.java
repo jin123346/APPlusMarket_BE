@@ -2,6 +2,7 @@ package com.aplus.aplusmarket.service;
 
 
 import com.aplus.aplusmarket.config.JwtTokenProvider;
+import com.aplus.aplusmarket.document.TokenHistory;
 import com.aplus.aplusmarket.dto.*;
 import com.aplus.aplusmarket.entity.User;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +39,6 @@ public class AuthService {
 
 
     //로그인 서비스
-    @Transactional
     public ResponseDTO login(LoginRequest loginRequest, HttpServletResponse resp) {
             log.info("로그인 시도한 아이디 : {}", loginRequest.getUid());
             Optional<User> opt = userMapper.selectUserByUid(loginRequest.getUid());
@@ -47,36 +48,60 @@ public class AuthService {
             log.info("22222");
                 User user = opt.get();
                 //active deactive 확인 여부
-                log.info("status :{}",user.getStatus());
+
+            log.info("DB에서 가져온 사용자 정보: {}", user);
                 if(!user.getStatus().equals("Active")){
+                    log.warn("로그인 실패 - not Active, 아이디: {}", loginRequest.getUid());
+
                     return ResponseDTO.builder()
                             .code(1002)
                             .status("fail")
                             .message("활성화된 계정이 아닙니다.")
                             .build();
                 }
-                //비밀번호 일치 여부
-                if(passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())){
+            // ✅ 비밀번호 검증 (로그 추가)
+                if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                    log.warn("로그인 실패 - 비밀번호 불일치, 아이디: {}", loginRequest.getUid());
+                    return ResponseDTO.builder()
+                            .code(1003)
+                            .status("fail")
+                            .message("계정이 일치하지 않습니다.")
+                            .build();
+                }
+            // ✅ Spring Security 인증 처리
+
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUid(), user.getPassword()));
+            // ✅ JWT 토큰 생성
                     String accessToken = jwtTokenProvider.createToken(user.getId(),user.getUid(), user.getNickname());
                     String refreshToken = jwtTokenProvider.createRefreshToken(user.getUid(), user.getNickname());
+                    UserDTO loginUser = UserDTO.loginUser(user);
 
+            // ✅ 응답 헤더 및 쿠키에 토큰 추가
 
-                    Map<String, Object> tokens = new HashMap<>();
-                    tokens.put("token", accessToken);
-                    tokens.put("refresh_token", refreshToken);
-
-
-                    Cookie cookie = new Cookie("refresh_token",refreshToken);
-                    cookie.setHttpOnly(true);
-                    cookie.setPath("/");
-                    cookie.setMaxAge(60*60*24*7);
-                    resp.addCookie(cookie);
-                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUid(), loginRequest.getPassword()));
+                    resp.setHeader("Authorization", "Bearer " + accessToken);
+//                    Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+//                    refreshTokenCookie.setHttpOnly(true);
+//                    refreshTokenCookie.setPath("/");
+//                    refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
+//                    resp.addCookie(refreshTokenCookie);
                     log.info("로그인 성공 아이디 : {}", loginRequest.getUid());
-                    return new DataResponseDTO<>(tokens,1000,"로그인 성공");
-                }
 
+            // ✅ MongoDB에 토큰 저장 (토큰 히스토리)
+                  //  TokenHistory saveTokenToDB = jwtTokenProvider.saveTokenToDB(user.getId(),accessToken,refreshToken );
+//            if (saveTokenToDB != null && accessToken.equals(saveTokenToDB.getAccessToken())) {
+//                log.info("로그인 성공 - 아이디: {}", loginRequest.getUid());
+//                return new DataResponseDTO<>(UserDTO.loginUser(user), 1000, "로그인 성공");
+//            } else {
+//                log.error("MongoDB에 토큰 저장 실패 - 아이디: {}", loginRequest.getUid());
+//                return ResponseDTO.builder()
+//                        .code(1004)
+//                        .status("fail")
+//                        .message("로그인 중 오류가 발생했습니다.")
+//                        .build();
+//            }
 
+                return new DataResponseDTO<>(UserDTO.loginUser(user), 1000, "로그인 성공");
+//
 
             }
             //해당하는 user 없음

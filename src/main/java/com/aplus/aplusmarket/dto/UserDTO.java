@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDTO {
-    private int id;
+    private long id;
     private String uid;
     private String password;
     private String email;
@@ -23,20 +23,18 @@ public class UserDTO {
     private String profileImg;
     private String nickName;
     private String name;
-    private String  status="ACTIVE"; // enum 변경할 예정
-    private long payBalance=0;
+    private String  status; // enum 변경할 예정
+    private long payBalance;
     private LocalDateTime birthday;
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
-    private int currentRate=0;
-    private int reportCount=0;
-    private int sellCount=0;
-    private String role="USER";   // USER, ADMIN 두개
+    private int currentRate;
+    private int reportCount;
+    private int sellCount;
+    private String role;   // USER, ADMIN 두개
 
 
     public User register() {
-
-
         return User.builder()
                 .uid(uid)
                 .password(password)
@@ -56,6 +54,24 @@ public class UserDTO {
                 .build();
 
 
+    }
+
+    public static UserDTO loginUser(User user){
+        return UserDTO.builder()
+                .id(user.getId())
+                .uid(user.getUid())
+                .hp(user.getHp())
+                .email(user.getEmail())
+                .nickName(user.getNickname())
+                .name(user.getName())
+                .profileImg(user.getProfileImg())
+                .status(user.getStatus())
+                .birthday(user.getBirthday())
+                .reportCount(user.getReportCount())
+                .currentRate(user.getCurrentRate())
+                .payBalance(user.getPayBalance())
+                .sellCount(user.getSellCount())
+                .build();
     }
 
 }
