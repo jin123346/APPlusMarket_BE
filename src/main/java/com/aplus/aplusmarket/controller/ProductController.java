@@ -38,10 +38,10 @@ public class ProductController {
     public boolean insertProduct(
             @ModelAttribute ProductDTO productDTO,
             @RequestPart("images") List<MultipartFile> images) throws IOException {
-        log.info("productDTO.getProduct_Images() : " + productDTO.getProductImages());
-        boolean check = productService.InsertProduct(productDTO,images);
-        return check;
+        log.info("images : "+ images.size());
+        return productService.InsertProduct(productDTO, images);
     }
+
     //상품 삭제
     @DeleteMapping("/delete/{id}")
     public boolean DeleteProductById(@PathVariable String id) {

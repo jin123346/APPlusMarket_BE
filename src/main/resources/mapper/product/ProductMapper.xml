@@ -4,11 +4,11 @@
 
     <!-- INSERT -->
     <insert id="InsertProduct" parameterType="com.aplus.aplusmarket.entity.Product" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO tb_product (title, product_images, product_name, content, register_location, register_ip,
-                             created_at, updated_at, reload_at, price, status, deleted_at, seller_id,
+        INSERT INTO tb_product (title, product_name, content, register_location, register_ip,
+                             created_at, updated_at, reload_at, price, status,  seller_id,
                              is_negotiable, is_possible_meet_you, category)
-        VALUES (#{title}, #{productImages}, #{productName}, #{content}, #{registerLocation}, #{registerIp},
-                NOW(), NOW(), #{reloadAt}, #{price}, #{status}, #{deletedAt}, #{sellerId},
+        VALUES (#{title}, #{productName}, #{content}, #{registerLocation}, #{registerIp},
+                NOW(), NOW(), NOW(), #{price}, #{status}, #{sellerId},
                 #{isNegotiable}, #{isPossibleMeetYou}, #{category})
     </insert>
 
@@ -36,7 +36,6 @@
         UPDATE tb_product
         <set>
             <if test="title != null">title = #{title},</if>
-            <if test="productImages != null">product_images = #{productImages},</if>
             <if test="productName != null">product_name = #{productName},</if>
             <if test="content != null">content = #{content},</if>
             <if test="registerLocation != null">register_location = #{registerLocation},</if>
