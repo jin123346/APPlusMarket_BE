@@ -13,4 +13,5 @@ public class Product_ImagesDTO {
     private Long productId;     // 상품 ID (FK)
     private String originalName; // 업로드된 실제 파일명
     private String uuidName;     // 서버에서 저장할 고유 파일명
+    private Integer imageIndex; //이미지 순서
 }

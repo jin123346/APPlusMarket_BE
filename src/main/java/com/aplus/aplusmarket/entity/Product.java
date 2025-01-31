@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class Product {
     private Long id;
     private String title;
-    private String productImages; // JSON 문자열로 처리
     private String productName;
     private String content;
     private String registerLocation;

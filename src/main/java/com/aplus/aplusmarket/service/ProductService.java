@@ -3,17 +3,21 @@ package com.aplus.aplusmarket.service;
 import com.aplus.aplusmarket.dto.product.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import com.aplus.aplusmarket.entity.Product;
+import com.aplus.aplusmarket.entity.Product_Images;
+import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -21,23 +25,22 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductMapper productMapper;
-    
+    private final ProductImageMapper productImageMapper;
     //파일 업로드 경로
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
-    
+    private final String USER_DIR = System.getProperty("user.dir");
     // Insert Product
+
+    @Transactional
     public boolean InsertProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
         Product product = toEntity(productDTO);
-
+        int index =0;
         boolean result = productMapper.InsertProduct(product);
-        log.info("Insert Product Result: " + result);
-
-        File productFolder = new File(uploadPath, product.getId().toString());
+        File productFolder = new File(USER_DIR+"/"+uploadPath+"/"+product.getId().toString());
         if (!productFolder.exists()) {
             productFolder.mkdirs();
         }
-
         if (images != null) {
             for (MultipartFile file : images) {
                 // 원본 파일명에서 확장자 추출
@@ -46,27 +49,22 @@ public class ProductService {
                 if (originalName != null && originalName.contains(".")) {
                     extension = originalName.substring(originalName.lastIndexOf("."));
                 }
-
                 // UUID 파일명 생성
                 String uuidName = UUID.randomUUID().toString() + extension;
-
                 // 최종 저장 경로
-                File dest = new File(productFolder, uuidName);
-
+                File dest = new File(productFolder,uuidName);
                 // 파일 저장 (disk write)
                 file.transferTo(dest);
 
-                log.info("Saved file: " + dest.getAbsolutePath());
-
-                // [선택] 이미지 메타데이터 DB에 저장
-                // Product_Images entity = new Product_Images();
-                // entity.setProductId(product.getId());
-                // entity.setOriginalName(originalName);
-                // entity.setUuidName(uuidName);
-                // productImagesMapper.insertImage(entity);
+                 Product_Images productImages = new Product_Images();
+                 productImages.setProductId(product.getId());
+                 productImages.setOriginalName(originalName);
+                 productImages.setUuidName(uuidName);
+                 productImages.setImageIndex(index);
+                 productImageMapper.InsertProductImage(productImages);
+                 index++;
             }
         }
-
         return result;
     }
 
@@ -77,8 +75,24 @@ public class ProductService {
             log.warn("No product found with ID: " + id);
             return null;
         }
-        log.info("Selected Product: " + product);
-        return toDTO(product); // Entity -> DTO 변환
+        ProductDTO productDTO = toDTO(product);
+        List<Product_Images> productImages = productImageMapper.SelectProductImageByProductId(product.getId());
+        // Product_Images -> Product_ImagesDTO 변환
+        List<Product_ImagesDTO> imageDTOs = productImages.stream()
+                .map(image -> new Product_ImagesDTO(
+                        image.getId(),
+                        image.getProductId(),
+                        image.getOriginalName(),
+                        image.getUuidName(),
+                        image.getImageIndex()
+                ))
+                .collect(Collectors.toList());
+
+        // DTO에 이미지 리스트 추가
+//        productDTO.setImages(imageDTOs);
+
+        log.info("Selected Product with Images: " + productDTO);
+        return productDTO;
     }
 
     // Select All Products
@@ -116,7 +130,6 @@ public class ProductService {
         return Product.builder()
                 .id(productDTO.getId())
                 .title(productDTO.getTitle())
-                .productImages(productDTO.getProductImages())
                 .productName(productDTO.getProductName())
                 .content(productDTO.getContent())
                 .registerLocation(productDTO.getRegisterLocation())
@@ -139,7 +152,6 @@ public class ProductService {
         return ProductDTO.builder()
                 .id(product.getId())
                 .title(product.getTitle())
-                .productImages(product.getProductImages())
                 .productName(product.getProductName())
                 .content(product.getContent())
                 .registerLocation(product.getRegisterLocation())
