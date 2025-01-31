@@ -11,12 +11,14 @@ import lombok.*;
 public class ChatRoomCardResponseDTO {
 
     int chatRoomId;
+
     String productThumbnail;
     int productId;
+
     Boolean isSeller; // 채팅방의 제품 판매자
-    String UserImage;
-    String UserName;
-    String RecentMessage;
-    String MessageCreatedAt;
+    String userImage;
+    String userName;
+    String recentMessage;
+    String messageCreatedAt;
 
 }

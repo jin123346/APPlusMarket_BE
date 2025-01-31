@@ -1,6 +1,8 @@
 package com.aplus.aplusmarket.dto;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 /*
     2024.1.26 하진희 :  responseDTO (data필요시)
  */
@@ -12,7 +14,7 @@ public class DataResponseDTO<T> extends ResponseDTO {
     private T data;
 
     private DataResponseDTO(T data){
-        super("success",0,"success");
+        super();
         this.data = data;
     }
 
@@ -23,7 +25,7 @@ public class DataResponseDTO<T> extends ResponseDTO {
 
 
     public DataResponseDTO(T data,int code){
-        super("success",code,"success");
+        super("success", code,"success");
         this.data=data;
     }
 
