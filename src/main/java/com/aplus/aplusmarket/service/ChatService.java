@@ -25,7 +25,7 @@ public class ChatService {
         return chatRoomMapper.selectMessagesByChatRoomId(chatRoomId);
     }
 
-    public List<ChatRoomCardResponseDTO> selectAllChatRoomCards() {
-        return chatRoomMapper.selectAllChatRoomCards();
+    public List<ChatRoomCardResponseDTO> selectAllChatRoomCards(int CurrentUserId) {
+        return chatRoomMapper.selectAllChatRoomCards(CurrentUserId);
     }
 }
