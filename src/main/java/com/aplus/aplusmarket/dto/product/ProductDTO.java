@@ -3,6 +3,7 @@ package com.aplus.aplusmarket.dto.product;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,7 +14,6 @@ import java.time.LocalDateTime;
 public class ProductDTO {
     private Long id;
     private String title;
-    private String productImages; // JSON 문자열로 처리
     private String productName;
     private String content;
     private String registerLocation;
@@ -28,4 +28,5 @@ public class ProductDTO {
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
+
 }
