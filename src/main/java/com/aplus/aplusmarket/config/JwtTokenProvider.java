@@ -1,12 +1,16 @@
 package com.aplus.aplusmarket.config;
 
 
+import com.aplus.aplusmarket.document.TokenHistory;
+import com.aplus.aplusmarket.respository.TokenHistoryRepository;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import io.jsonwebtoken.security.Keys;
@@ -14,7 +18,7 @@ import io.jsonwebtoken.security.Keys;
 /*
     2024.01.26 하진희 - jwt 토근제공컴포넌트 생성하기
  */
-
+@RequiredArgsConstructor
 @Log4j2
 @Component
 public class JwtTokenProvider {
@@ -22,6 +26,8 @@ public class JwtTokenProvider {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long validityInMilliseconds = 3600000; //1시간
     private final long refreshTokenValidity = 7 * 24 * 60 * 60 ; // 1일
+
+    private final TokenHistoryRepository tokenHistoryRepository;
 
     /**
      * 토큰 생성 메서드
@@ -36,6 +42,8 @@ public class JwtTokenProvider {
         claims.put("nickName", nickName);
         Date now = new Date();
         Date expiry  = new Date(now.getTime() + validityInMilliseconds);
+
+
 
 
         return Jwts.builder()
@@ -128,6 +136,36 @@ public class JwtTokenProvider {
             log.error("JWT 처리 중 알 수 없는 오류 발생: {}", token, e);  // 기타 오류 로그
             throw e;  // 예외를 던져서 필터에서 처리
         }
+    }
+
+    public Date getTokenExpiry(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getExpiration();
+    }
+
+    public TokenHistory saveTokenToDB(long userId, String accessToken, String refreshToken) {
+        try {
+            Date accessTokenExpiry = getTokenExpiry(accessToken);
+            Date refreshTokenExpiry = getTokenExpiry(refreshToken);
+
+            TokenHistory tokenHistory = new TokenHistory();
+            tokenHistory.setUserId(userId);
+            tokenHistory.setAccessToken(accessToken);
+            tokenHistory.setRefreshToken(refreshToken);
+            tokenHistory.setAccessTokenExpiry(accessTokenExpiry);
+            tokenHistory.setRefreshTokenExpiry(refreshTokenExpiry);
+            return tokenHistoryRepository.save(tokenHistory);
+
+        }catch (Exception e){
+            log.error("MongoDB 토큰 저장 실패 - userId: {}, error: {}", userId, e.getMessage());
+            return null; // 저장 실패 시 null 반환
+        }
+
     }
 
 

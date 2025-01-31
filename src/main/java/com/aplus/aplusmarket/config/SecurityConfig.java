@@ -49,7 +49,7 @@ public class SecurityConfig  implements WebMvcConfigurer {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,myUserDetailsService), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/**").permitAll()// 인증 없이 허용할 경로
                         .anyRequest().permitAll()
@@ -65,7 +65,6 @@ public class SecurityConfig  implements WebMvcConfigurer {
 
     @Bean
     protected CorsConfigurationSource corsConfigurationSource(){
-        System.out.println("corsConfigurationSource@222222222222222222222");
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 //        corsConfiguration.setAllowedOriginPatterns(List.of(
 //                "http://10.0.2.2:8080",

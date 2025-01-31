@@ -1,6 +1,8 @@
 package com.aplus.aplusmarket.config;
 
 
+import com.aplus.aplusmarket.util.MyUserDetails;
+import com.aplus.aplusmarket.util.MyUserDetailsService;
 import com.nimbusds.oauth2.sdk.auth.JWTAuthenticationClaimsSet;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +15,7 @@ import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -27,6 +30,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final MyUserDetailsService myUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -38,8 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String uid = jwtTokenProvider.getUid(token);
 
                 // 인증 정보 설정
+                UserDetails userDetails = myUserDetailsService.loadUserByUsername(uid);
                 SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(uid, null, null)
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())
                 );
             }
 

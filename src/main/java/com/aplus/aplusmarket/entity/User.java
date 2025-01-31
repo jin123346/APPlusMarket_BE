@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public class User {
-    private int id;
+    private long id;
     private String uid;
     private String password;
     private String email;
@@ -23,7 +23,7 @@ public class User {
     private String profileImg;
     private String nickname;
     private String name;
-    private String  status; // enum 변경할 예정
+    private String status; // enum 변경할 예정
     private long payBalance;
 
     private LocalDateTime birthday;
