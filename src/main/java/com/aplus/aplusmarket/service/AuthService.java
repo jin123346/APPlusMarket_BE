@@ -92,15 +92,15 @@ public class AuthService {
             // ✅ 응답 헤더 및 쿠키에 토큰 추가
 
                     resp.setHeader("Authorization", "Bearer " + accessToken);
-            ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
-                    .httpOnly(true)  // ✅ JavaScript에서 접근 불가
-                    .secure(true)    // ✅ HTTPS에서만 전송
-                    .path("/")       // ✅ 모든 경로에서 사용 가능
-                    .sameSite("Strict") // ✅ CSRF 공격 방지
-                    .maxAge(7 * 24 * 60 * 60) // 7일 유지
-                    .build();
-                    log.info("로그인 성공 아이디 : {}", loginRequest.getUid());
-            resp.addHeader("Set-Cookie", refreshTokenCookie.toString()); // 쿠키를 응답 헤더에 추가
+                    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+                            .httpOnly(true)  // ✅ JavaScript에서 접근 불가
+                            .secure(false)    // ✅ HTTPS에서만 전송
+                            .path("/")       // ✅ 모든 경로에서 사용 가능
+                            .sameSite("Strict") // ✅ CSRF 공격 방지
+                            .maxAge(7 * 24 * 60 * 60) // 7일 유지
+                            .build();
+                            log.info("로그인 성공 아이디 : {}", loginRequest.getUid());
+                    resp.addHeader("Set-Cookie", refreshTokenCookie.toString()); // 쿠키를 응답 헤더에 추가
 
             // ✅ MongoDB에 토큰 저장 (토큰 히스토리)
                     TokenHistory saveTokenToDB = jwtTokenProvider.saveTokenToDB(user.getId(),refreshToken, loginRequest.getDeviceInfo(),request);
@@ -133,12 +133,17 @@ public class AuthService {
     public ResponseDTO logout(HttpServletResponse response,String refreshToken,long userId){
 
         try{
+            log.info("로그아웃 중 ");
             if(refreshToken != null){
-                if(userId >= 0 ){
+                log.info("로그아웃 중 : 토큰이 null이 아님  ");
+
+                if(userId > 0 ){
                     String hashedUser = TokenEncrpytor.hashUserId(userId);
                     revokeAllTokensByUserId(hashedUser);
 
                 }else{
+                    log.info("로그아웃 중 : 토큰히스토리 확인중3  ");
+
                     String encrypted =  TokenEncrpytor.encrypt(refreshToken);
                     Optional<TokenHistory> opt =  tokenHistoryRepository.findByRefreshToken(encrypted);
                     if(opt.isPresent()){

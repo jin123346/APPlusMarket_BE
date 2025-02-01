@@ -31,7 +31,7 @@ public class JwtTokenProvider {
 
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long validityInMilliseconds = 3600000; //1시간
-    private final long refreshTokenValidity = 7 * 24 * 60 * 60 ; // 1일
+    private final long refreshTokenValidity = 7 * 24 * 60 * 60 * 1000L; // ✅ 7일
 
     private final TokenHistoryRepository tokenHistoryRepository;
 
