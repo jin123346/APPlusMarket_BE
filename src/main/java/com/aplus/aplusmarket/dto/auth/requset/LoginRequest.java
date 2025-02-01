@@ -1,4 +1,4 @@
-package com.aplus.aplusmarket.dto;
+package com.aplus.aplusmarket.dto.auth.requset;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,4 +8,5 @@ import lombok.Setter;
 public class LoginRequest {
     private String uid;
     private String password;
+    private String deviceInfo;
 }

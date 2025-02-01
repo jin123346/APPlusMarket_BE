@@ -9,13 +9,12 @@ spring:
     datasource:
         url: jdbc:mysql://localhost:3306/applusmarket?serverTimezone=Asia/Seoul
         username: root
-        password: asd1234
+        password: 1234
         driver-class-name: com.mysql.cj.jdbc.Driver
         mybatis:
             mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
             config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
             type-aliases-package: com.aplus.aplusmarket # TypeAlias 사용할 패키지 경로
-
     jpa:
         database: mysql
         hibernate:
@@ -30,6 +29,9 @@ spring:
         multipart:
             enabled: true
             location: uploads/
+    data:
+        mongodb:
+            uri: mongodb://root:Qwe1234~!@43.202.32.28:27017/applus?authSource=admin
 
 mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
