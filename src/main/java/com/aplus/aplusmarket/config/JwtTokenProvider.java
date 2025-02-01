@@ -1,19 +1,25 @@
 package com.aplus.aplusmarket.config;
 
-
-import com.aplus.aplusmarket.document.TokenHistory;
-import com.aplus.aplusmarket.respository.TokenHistoryRepository;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
+import com.aplus.aplusmarket.documents.TokenHistory;
+import com.aplus.aplusmarket.repository.TokenHistoryRepository;
+import com.aplus.aplusmarket.util.TokenEncrpytor;
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.Date;
 
 import io.jsonwebtoken.security.Keys;
+import org.springframework.transaction.annotation.Transactional;
+
 
 /*
     2024.01.26 하진희 - jwt 토근제공컴포넌트 생성하기
@@ -96,7 +102,7 @@ public class JwtTokenProvider {
     }
 
 
-    public boolean validateToken(String token) {
+    public  boolean validateToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -148,17 +154,30 @@ public class JwtTokenProvider {
         return claims.getExpiration();
     }
 
-    public TokenHistory saveTokenToDB(long userId, String accessToken, String refreshToken) {
+    //리프레쉬 토큰 부분
+    @Transactional
+    public TokenHistory saveTokenToDB(long userId, String refreshToken, String deviceInfo, HttpServletRequest request) {
         try {
-            Date accessTokenExpiry = getTokenExpiry(accessToken);
             Date refreshTokenExpiry = getTokenExpiry(refreshToken);
+            String encryptedToken = TokenEncrpytor.encrypt(refreshToken);
 
-            TokenHistory tokenHistory = new TokenHistory();
-            tokenHistory.setUserId(userId);
-            tokenHistory.setAccessToken(accessToken);
-            tokenHistory.setRefreshToken(refreshToken);
-            tokenHistory.setAccessTokenExpiry(accessTokenExpiry);
-            tokenHistory.setRefreshTokenExpiry(refreshTokenExpiry);
+            //ip 구하기
+            String ip = request.getHeader("X-Forwarded-For"); // 프록시 서버가 있는 경우
+            if (ip == null || ip.isEmpty()) {
+                ip = request.getRemoteAddr(); // 클라이언트의 실제 IP
+            }
+
+
+            TokenHistory tokenHistory = TokenHistory.builder()
+                    .refreshToken(encryptedToken)
+                    .expiresAt(refreshTokenExpiry)
+                    .issuedAt(LocalDateTime.now())
+                    .deviceInfo(deviceInfo)
+                    .ipAddress(ip)
+                    .hashed_userid(TokenEncrpytor.hashUserId(userId))
+                    .build();
+
+
             return tokenHistoryRepository.save(tokenHistory);
 
         }catch (Exception e){
@@ -167,6 +186,11 @@ public class JwtTokenProvider {
         }
 
     }
+
+
+
+
+
 
 
 

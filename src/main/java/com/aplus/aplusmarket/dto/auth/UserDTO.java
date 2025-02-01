@@ -1,11 +1,9 @@
-package com.aplus.aplusmarket.dto;
+package com.aplus.aplusmarket.dto.auth;
 
 import com.aplus.aplusmarket.entity.User;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 
 @Getter

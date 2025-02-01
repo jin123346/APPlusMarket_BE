@@ -1,9 +1,8 @@
 package com.aplus.aplusmarket.controller;
 
-import com.aplus.aplusmarket.dto.LoginRequest;
+import com.aplus.aplusmarket.dto.auth.requset.LoginRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
