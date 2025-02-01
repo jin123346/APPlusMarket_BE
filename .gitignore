@@ -38,4 +38,6 @@ out/
 
 
 ### localyml  Code ###
-application-local.yml/
+application-local.yml
+resources/application-local.yml
+src/main/resources/application-local.yml
