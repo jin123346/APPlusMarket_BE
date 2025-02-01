@@ -47,6 +47,8 @@ public class AuthController {
                                     HttpServletResponse response) {
         // ✅ Refresh Token 삭제를 위한 빈 쿠키 설정
 
+        log.info("logout Token!!"+refreshToken);
+
         ResponseDTO responseDTO = authService.logout(response,refreshToken,userId);
         return ResponseEntity.ok().body(responseDTO);
     }
@@ -63,6 +65,7 @@ public class AuthController {
 
     @GetMapping("/refresh")
     public ResponseEntity refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken){
+        log.info("Refresh Token!! 요청 들어옴 "+refreshToken);
         if(refreshToken == null){
             ResponseDTO responseDTO = ErrorResponseDTO.of(1005,"토큰이 존재하지않습니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
