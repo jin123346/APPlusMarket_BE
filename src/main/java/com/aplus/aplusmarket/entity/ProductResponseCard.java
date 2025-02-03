@@ -1,4 +1,4 @@
-package com.aplus.aplusmarket.dto.product.response;
+package com.aplus.aplusmarket.entity;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductResponseCardDTO {
+public class ProductResponseCard {
     private Long id;
     private String title;
     private String productImage;
