@@ -1,5 +1,6 @@
 package com.aplus.aplusmarket.mapper.product;
 import com.aplus.aplusmarket.entity.Product;
+import com.aplus.aplusmarket.entity.ProductResponseCard;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -11,6 +12,6 @@ public interface ProductMapper {
     List<Product> SelectAllProducts();
     boolean UpdateProduct(Product product);
     boolean DeleteProduct(Long id);
-    List<Product> SelectProductsPage(@Param("pageSize") int pageSize, @Param("offset") int offset);
+    List<ProductResponseCard> SelectProductsPage(@Param("pageSize") int pageSize, @Param("offset") int offset);
 }
 
