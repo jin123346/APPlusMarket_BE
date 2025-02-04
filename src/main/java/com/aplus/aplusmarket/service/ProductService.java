@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+/*
+* 2024.02.04 이도영 상품 페이징 처리 기능 수정
+* */
 @Log4j2
 @Service
 @RequiredArgsConstructor
@@ -72,7 +74,7 @@ public class ProductService {
                     index++;
                 }
             }
-            return ResponseDTO.of("succeess",2000,"상품 등록 성공");
+            return ResponseDTO.of("success",2000,"상품 등록 성공");
         }catch (Exception e){
             log.error(e);
             return ErrorResponseDTO.of(2001, "상품 등록 실패 :"+e.getMessage());
@@ -196,7 +198,6 @@ public class ProductService {
                 .productName(dto.getProductName())
                 .createdAt(dto.getCreatedAt())
                 .updatedAt(dto.getUpdatedAt())
-                .reloadAt(dto.getReloadAt())
                 .price(dto.getPrice())
                 .status(dto.getStatus())
                 .sellerId(dto.getSellerId())
