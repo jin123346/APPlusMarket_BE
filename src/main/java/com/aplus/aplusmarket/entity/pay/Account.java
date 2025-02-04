@@ -16,6 +16,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class Account {
     private String id;  // 고유 식별자 (AUTO INCREMENT)
     private String uid; // 사용자 ID (FK)
