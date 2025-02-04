@@ -51,4 +51,7 @@ logging:
     level:
         org.mybatis: DEBUG
         org.springframework: INFO
-
+#2024.02.04 이도영 이미지 파일 경로 추가
+file:
+    upload:
+        path: uploads

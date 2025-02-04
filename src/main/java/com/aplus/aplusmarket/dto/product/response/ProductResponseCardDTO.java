@@ -17,7 +17,6 @@ public class ProductResponseCardDTO {
     private String productName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime reloadAt;
     private Integer price;
     private String status;
     private Boolean isNegotiable;
