@@ -1,24 +1,26 @@
 package com.aplus.aplusmarket.config;
 
-import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import com.aplus.aplusmarket.documents.TokenHistory;
 import com.aplus.aplusmarket.repository.TokenHistoryRepository;
 import com.aplus.aplusmarket.util.TokenEncrpytor;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Date;
 
-import io.jsonwebtoken.security.Keys;
 import org.springframework.transaction.annotation.Transactional;
+
+import static io.jsonwebtoken.Jwts.*;
 
 
 /*
@@ -29,11 +31,26 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class JwtTokenProvider {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${token.jwt.secret}")
+    private String secret;
+    @Value("${token.jwt.issuer}")
+    private String issuer;
+
+    private Key key;
+
     private final long validityInMilliseconds = 3600000; //1시간
     private final long refreshTokenValidity = 7 * 24 * 60 * 60 * 1000L; // ✅ 7일
 
     private final TokenHistoryRepository tokenHistoryRepository;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+        log.info("🔍 Loaded issuer from properties: {}", issuer);
+
+    }
+
 
     /**
      * 토큰 생성 메서드
@@ -43,34 +60,36 @@ public class JwtTokenProvider {
      */
     public String createToken(long id, String uid,String nickName) {
 
-        Claims claims = Jwts.claims().setSubject(uid);
+        Claims claims = claims().setSubject(uid);
         claims.put("id", id);
         claims.put("nickName", nickName);
         Date now = new Date();
         Date expiry  = new Date(now.getTime() + validityInMilliseconds);
-
-
-
-
+        log.info("issuer : {}",issuer);
+        log.info("디코딩된 토큰 - Issuer: {}", claims.getIssuer());  // ✅ 저장된 issuer 값 확인
         return Jwts.builder()
                 .setClaims(claims)
+                .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String createRefreshToken(String uid,String nickName) {
 
-        Claims claims = Jwts.claims().setSubject(uid);
+        Claims claims = claims().setSubject(uid);
         claims.put("nickName", nickName);
         Date now = new Date();
         Date expiry  = new Date(now.getTime() + refreshTokenValidity);
+
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
+                .setIssuer(issuer)
                 .setExpiration(expiry)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -84,7 +103,7 @@ public class JwtTokenProvider {
     }
 
     public String getNickname(String token) {
-        return Jwts.parserBuilder()
+        return  Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
@@ -93,7 +112,7 @@ public class JwtTokenProvider {
     }
 
     public String getUid(String token) {
-        return Jwts.parserBuilder()
+        return  Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
@@ -104,7 +123,7 @@ public class JwtTokenProvider {
 
     public  boolean validateToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
+            Claims claims =  Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
@@ -114,6 +133,17 @@ public class JwtTokenProvider {
             if (expiration.before(new Date())) {
                 log.info("Token is expired");
                 return false; // 토큰 만료
+            }
+
+            String savedIssuer = claims.get("iss",String.class);
+            log.info("저장된 issuer!!! "+savedIssuer);
+
+            log.info("issuer 222: {}",issuer);
+
+            if(savedIssuer ==null || !savedIssuer.equals(issuer)){
+                log.warn("이 토큰은 발급자가 다릅니다.");
+                //TODO: 블랙리스트 처리 로직
+                return false;
             }
             return true;
         } catch (UnsupportedJwtException e) {
@@ -145,7 +175,7 @@ public class JwtTokenProvider {
     }
 
     public Date getTokenExpiry(String token) {
-        Claims claims = Jwts.parserBuilder()
+        Claims claims = parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)

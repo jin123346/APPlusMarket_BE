@@ -52,3 +52,8 @@ logging:
         org.mybatis: DEBUG
         org.springframework: INFO
 
+token:
+    jwt:
+        secret: "UexkyuXOpB7ApyOmIXm0zn23EE/ZLlbdRHFIronNyvHb1NoipAZHj2App1HBm8RwCSmHUzzWYRRL61OyAST2TQ=="
+        issuer: "applusmarket"
+
