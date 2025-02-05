@@ -28,5 +28,5 @@ public class ProductDTO {
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
-
+    private List<Product_ImagesDTO> images;
 }
