@@ -102,7 +102,7 @@ public class AuthController {
 
 
     //나의 정보 기능
-    @PostMapping("/myInfo")
+    @GetMapping("/myInfo")
     public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken") String refreshToken){
         Long id =(Long)request.getAttribute("id");
         log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
@@ -129,6 +129,15 @@ public class AuthController {
 
         return ResponseEntity.ok().body(responseDTO);
 
+    }
+
+    // 나의 정보 수정 요청
+    @PostMapping("/myInfo")
+    public ResponseEntity updateUserInfo(@RequestBody MyInfoUser myInfoUser){
+
+       ResponseDTO responseDTO =  userService.updateUserByIdForMyInfo(myInfoUser);
+
+        return ResponseEntity.ok().body(responseDTO);
     }
 
 

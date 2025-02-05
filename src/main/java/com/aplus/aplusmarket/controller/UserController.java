@@ -1,8 +1,12 @@
 package com.aplus.aplusmarket.controller;
 
-import com.aplus.aplusmarket.dto.auth.requset.LoginRequest;
+import com.aplus.aplusmarket.dto.DataResponseDTO;
+import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.auth.requset.FindUserRequestDTO;
+import com.aplus.aplusmarket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,12 +15,39 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
 
+    private final UserService userService;
 
-    @PostMapping("/login")
-    public String Login(@RequestBody LoginRequest user) {
+    @PostMapping("/find/uid")
+    public ResponseEntity findUid(@RequestBody FindUserRequestDTO user) {
+        log.info("name : " + user.getName());
+        log.info("email : " + user.getEmail());
+
+        ResponseDTO responseDTO = userService.findUidByNameAndEmail(user);
+
+        if(responseDTO instanceof DataResponseDTO){
+            return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
+        }
+        return ResponseEntity.ok().body(responseDTO);
+    }
+
+    @PostMapping("/find/pass")
+    public ResponseEntity findPass(@RequestBody FindUserRequestDTO user) {
         log.info("uid : " + user.getUid());
-        log.info("password : " + user.getPassword());
+        log.info("email : " + user.getEmail());
 
-        return "Login success";
+        ResponseDTO responseDTO = userService.findUidByUidAndEmail(user);
+
+        if(responseDTO instanceof DataResponseDTO){
+            return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
+        }
+        return ResponseEntity.ok().body(responseDTO);
+    }
+
+    @PutMapping("/find/pass/change")
+    public ResponseEntity findPassChange(@RequestBody FindUserRequestDTO user) {
+        log.info("id : " + user.getId());
+        ResponseDTO responseDTO = userService.updatePassword(user);
+
+        return ResponseEntity.ok().body(responseDTO);
     }
 }

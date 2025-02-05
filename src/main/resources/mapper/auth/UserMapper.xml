@@ -23,4 +23,28 @@
         values (#{uid},#{password},#{email},#{hp},#{name},#{nickname}, #{birthday})
     </insert>
 
+
+    <update id="updateUserById" parameterType="Integer">
+        UPDATE tb_user
+        <set>
+            <if test="nickName != null">nickName=#{nickName},</if>
+            <if test="email != null">email=#{email},</if>
+            <if test="hp != null">hp=#{hp},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+
+    <select id="selectUserByNameAndEmail" parameterType="com.aplus.aplusmarket.dto.auth.requset.FindUserRequestDTO" resultType="String">
+        SELECT uid FROM tb_user where name=#{name} and email=#{email}
+    </select>
+    <select id="selectUserByUidAndEmail" parameterType="com.aplus.aplusmarket.dto.auth.requset.FindUserRequestDTO" resultType="Long">
+        SELECT id FROM tb_user where uid=#{uid} and email=#{email}
+    </select>
+
+
+    <update id="updatePassById" parameterType="com.aplus.aplusmarket.dto.auth.requset.FindUserRequestDTO">
+        UPDATE tb_user SET password = #{password}
+        WHERE id=#{id}
+    </update>
+
 </mapper>
