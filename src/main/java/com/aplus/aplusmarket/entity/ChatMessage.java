@@ -16,4 +16,5 @@ public class ChatMessage {
     private Integer chatRoomId;
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
-    private Boolean isRead;}
+    private Boolean isRead;
+}

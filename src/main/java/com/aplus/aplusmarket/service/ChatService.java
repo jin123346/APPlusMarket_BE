@@ -3,15 +3,23 @@ package com.aplus.aplusmarket.service;
 import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
 import com.aplus.aplusmarket.dto.chat.response.*;
 import com.aplus.aplusmarket.entity.ChatMessage;
+import com.aplus.aplusmarket.entity.ChatRoom;
 import com.aplus.aplusmarket.mapper.chat.ChatRoomMapper;
+import com.nimbusds.oauth2.sdk.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.time.LocalTime.now;
 
 @Service
 @RequiredArgsConstructor
@@ -19,14 +27,28 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     final ChatRoomMapper chatRoomMapper;
+    final SimpMessagingTemplate messagingTemplate;
 
-    public List<ChatMessage> selectAllMessagesByChatRoomId(int chatRoomId) {
-        return chatRoomMapper.selectMessagesByChatRoomId(chatRoomId);
+    public ChatMessageCreateDTO insertMessage(ChatMessageCreateDTO chatMessage) {
+        try {
+
+            chatMessage.setCreatedAt(LocalDateTime.now());
+            log.error(chatMessage);
+            int result = chatRoomMapper.insertMessage(chatMessage);
+            if(result > 0){
+                return chatMessage;
+            }else {
+
+                throw new RuntimeException("Insert chat message failed");            }
+        }
+        catch (Exception e) {
+            log.error(e);
+            throw new RuntimeException("Insert message failed");
+        }
     }
 
     // 유저 아이디로 채팅방 목록 조회 - 2025/02/03 check
     public ResponseDTO selectChatRoomsByUserId(int userId) {
-
         try {
             log.info("채팅방 조회 요청 userId : {}", userId);
             List<ChatRoomCardResponseDTO> chatRooms = chatRoomMapper.selectChatRoomsByUserId(userId);
@@ -49,14 +71,18 @@ public class ChatService {
 
     }
 
+    // 채팅방 아이디로 채팅방 상세 조회 - 2025/02/03 check
+    @Transactional
     public ResponseDTO selectChatRoomDetailsById(int chatRoomId) {
 
         try {
             if(chatRoomMapper.existsChatRoomById(chatRoomId)) {
 
                 List<ChatRoomSQLResultDTO> chatRoomSQLResult = chatRoomMapper.selectChatRoomDetailsById(chatRoomId);
+                List<UserCardDTO> participants = chatRoomMapper.selectParticipantsByChatRoomId(chatRoomId);
 
-                ChatRoomDetailDTO chatRoomResponseDTO = toChatRoomDetailDTO(chatRoomSQLResult);
+                ChatRoomDetailDTO chatRoomResponseDTO = toChatRoomDetailDTO(chatRoomSQLResult,participants);
+                // TODO : 참여자를 넣어주는 로직 추가 09:00 시작
 
                 System.out.println(chatRoomResponseDTO);
                 return new DataResponseDTO<>(chatRoomResponseDTO, 4000, "채팅방 상세 조회 성공");
@@ -72,7 +98,9 @@ public class ChatService {
             return ErrorResponseDTO.of(4001, "채팅방 상세 조회 실패 : " + e.getMessage());
         }
     }
-    public ChatRoomDetailDTO toChatRoomDetailDTO(List<ChatRoomSQLResultDTO> sqlResultList) {
+
+    // SQL 결과 DTO ResponseDTO로 변환 완료
+    public ChatRoomDetailDTO toChatRoomDetailDTO(List<ChatRoomSQLResultDTO> sqlResultList,List<UserCardDTO> participants) {
         // 하나의 채팅방만 있다고 가정하므로, 첫 번째 결과만 사용
         if (sqlResultList == null || sqlResultList.isEmpty()) {
             return null;
@@ -90,20 +118,11 @@ public class ChatService {
                         .price(firstResult.getPrice())
                         .isNegotiable(firstResult.getIsNegotiable())
                         .build())
-                .participants(
-                        sqlResultList.stream()
-                                .map(result -> UserCardDTO.builder()
-                                        .userId(result.getUserId())
-                                        .userName(result.getUserName())
-                                        .profileImage(result.getProfileImage())
-                                        .build())
-                                .distinct() // 중복 유저 제거
-                                .limit(2) // 2명만 추출
-                                .collect(Collectors.toList()))  // 유저 리스트 그대로 저장
+                .participants(participants)
                 .messages(sqlResultList.stream()
                         .map(result -> ChatMessageDTO.builder()
-                                .chatMessageId(result.getChatMessageId())
-                                .userId(result.getUserId())
+                                .messageId(result.getChatMessageId())
+                                .senderId(result.getUserId())
                                 .content(result.getContent())
                                 .createdAt(result.getCreateAt())
                                 .build())
