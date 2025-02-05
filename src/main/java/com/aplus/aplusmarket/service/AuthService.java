@@ -168,9 +168,9 @@ public class AuthService {
 
 
 
-            return ResponseDTO.of("success",1009,"Logged out successfully");
+            return ResponseDTO.of("success",1010,"Logged out successfully");
         } catch (Exception e) {
-            return ResponseDTO.of("fail",1010,"로그아웃 중 에러 발생 "+e.getMessage());
+            return ResponseDTO.of("fail",1011,"로그아웃 중 에러 발생 "+e.getMessage());
         }
 
     }
