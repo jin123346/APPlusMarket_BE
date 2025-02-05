@@ -2,6 +2,10 @@ package com.aplus.aplusmarket.dto.chat.request;
 
 import lombok.*;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 @Getter
 @Setter
 @ToString
@@ -9,8 +13,10 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessageCreateDTO {
-
-    private int ChatRoomId;
+    private int messageId;
+    private int chatRoomId;
     private String content;
-    private int SenderId;
+    private int senderId;
+    private LocalDateTime  createdAt;
+
 }
