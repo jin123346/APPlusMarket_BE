@@ -8,7 +8,7 @@
                              created_at, updated_at, reload_at, price, status,  seller_id,
                              is_negotiable, is_possible_meet_you, category)
         VALUES (#{title}, #{productName}, #{content}, #{registerLocation}, #{registerIp},
-                NOW(), NOW(), NOW(), #{price}, #{status}, #{sellerId},
+                NOW(), NOW(), NOW(), #{price}, 'Active', #{sellerId},
                 #{isNegotiable}, #{isPossibleMeetYou}, #{category})
     </insert>
 
@@ -57,9 +57,24 @@
     <delete id="DeleteProduct" parameterType="long">
         DELETE FROM tb_product WHERE id = #{id}
     </delete>
-    <select id="SelectProductsPage" resultType="com.aplus.aplusmarket.entity.Product">
-        SELECT id,title,product_images ,product_name ,price,status,seller_id,is_negotiable,is_possible_meet_you,category FROM tb_product
-        ORDER BY created_at DESC
+    <select id="SelectProductsPage" resultType="com.aplus.aplusmarket.entity.ProductResponseCard">
+        SELECT
+            p.id,
+            p.title,
+            p.product_name,
+            p.created_at,
+            p.updated_at,
+            p.price,
+            p.status,
+            p.seller_id,
+            p.is_negotiable,
+            p.is_possible_meet_you,
+            p.category,
+            img.uuid_name AS product_image
+        FROM tb_product p
+                 LEFT JOIN tb_product_image img
+                           ON p.id = img.product_id AND img.image_index = 0
+        ORDER BY p.updated_at DESC
             LIMIT #{pageSize} OFFSET #{offset}
     </select>
 </mapper>
