@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 /*
 *  2025.01.31 황수빈 - 더미데이터 추가 후 조회
+*  2025.02.03 황수빈 - 채팅방 상세정보 가져오기 시도중
 *
 * */
 @RestController
@@ -30,26 +31,16 @@ public class ChatController {
 
     final ChatService chatService;
 
+    // 유저 아이디로 채팅방 목록 조회
     @GetMapping("/chat-rooms")
-    public ResponseDTO selectChatRoomByUserId(@RequestParam int userId) {
-        try {
-            log.info("채팅방 조회 요청 userId : {}", userId);
-            List<ChatRoomCardResponseDTO> chatRooms = chatService.selectAllChatRoomCards(userId);
+    public ResponseDTO getChatRoomsByUserId(@RequestParam("userId") int userId) {
 
-            if (chatRooms == null || chatRooms.isEmpty()) {
-                return ResponseDTO.builder()
-                        .code(4000)
-                        .message("채팅방이 존재하지 않습니다.")
-                        .build();
-            }
-
-            return new DataResponseDTO<>(chatRooms, 4000, "채팅방 조회 성공");
-
-        } catch (Exception e) {
-            log.error(e);
-            return ErrorResponseDTO.of(4001, "채팅방 조회 실패 : " + e.getMessage());
-        }
+           return chatService.selectChatRoomsByUserId(userId);
     }
 
-
+    // TODO - 컨트롤러 완성
+    @GetMapping("/chat-rooms/{id}")
+    public ResponseDTO getChatRoomById(@PathVariable("id") int chatRoomId) {
+        return chatService.selectChatRoomDetailsById(1);
+    }
 }

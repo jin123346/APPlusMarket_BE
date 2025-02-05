@@ -10,15 +10,15 @@ import lombok.*;
 @NoArgsConstructor
 public class ChatRoomCardResponseDTO {
 
-    int chatRoomId;
+    private int chatRoomId;
 
-    String productThumbnail;
-    int productId;
+    private String productThumbnail;
 
-    Boolean isSeller; // 채팅방의 제품 판매자
-    String userImage;
-    String userName;
-    String recentMessage;
-    String messageCreatedAt;
+    private int productId;
+    private Boolean isSeller; // 채팅방의 제품 판매자
+    private String userImage;
+    private String userName;
+    private String recentMessage;
+    private String messageCreatedAt;
 
 }

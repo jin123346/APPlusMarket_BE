@@ -1,14 +1,20 @@
 package com.aplus.aplusmarket.service;
 
+import com.aplus.aplusmarket.dto.DataResponseDTO;
+import com.aplus.aplusmarket.dto.ErrorResponseDTO;
+import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
+import com.aplus.aplusmarket.dto.product.response.ProductResponseCardDTO;
 import com.aplus.aplusmarket.entity.Product;
+import com.aplus.aplusmarket.entity.ProductResponseCard;
 import com.aplus.aplusmarket.entity.Product_Images;
 import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +24,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+/*
+* 2024.02.04 이도영 상품 페이징 처리 기능 수정
+* */
 @Log4j2
 @Service
 @RequiredArgsConstructor
@@ -33,43 +41,48 @@ public class ProductService {
     // Insert Product
 
     @Transactional
-    public boolean InsertProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
-        Product product = toEntity(productDTO);
-        int index =0;
-        boolean result = productMapper.InsertProduct(product);
-        File productFolder = new File(USER_DIR+"/"+uploadPath+"/"+product.getId().toString());
-        if (!productFolder.exists()) {
-            productFolder.mkdirs();
-        }
-        if (images != null) {
-            for (MultipartFile file : images) {
-                // 원본 파일명에서 확장자 추출
-                String originalName = file.getOriginalFilename();
-                String extension = "";
-                if (originalName != null && originalName.contains(".")) {
-                    extension = originalName.substring(originalName.lastIndexOf("."));
-                }
-                // UUID 파일명 생성
-                String uuidName = UUID.randomUUID().toString() + extension;
-                // 최종 저장 경로
-                File dest = new File(productFolder,uuidName);
-                // 파일 저장 (disk write)
-                file.transferTo(dest);
-
-                 Product_Images productImages = new Product_Images();
-                 productImages.setProductId(product.getId());
-                 productImages.setOriginalName(originalName);
-                 productImages.setUuidName(uuidName);
-                 productImages.setImageIndex(index);
-                 productImageMapper.InsertProductImage(productImages);
-                 index++;
+    public ResponseDTO insertProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
+        try{
+            Product product = toEntity(productDTO);
+            int index =0;
+            boolean result = productMapper.InsertProduct(product);
+            File productFolder = new File(USER_DIR+"/"+uploadPath+"/"+product.getId().toString());
+            if (!productFolder.exists()) {
+                productFolder.mkdirs();
             }
+            if (images != null) {
+                for (MultipartFile file : images) {
+                    // 원본 파일명에서 확장자 추출
+                    String originalName = file.getOriginalFilename();
+                    String extension = "";
+                    if (originalName != null && originalName.contains(".")) {
+                        extension = originalName.substring(originalName.lastIndexOf("."));
+                    }
+                    // UUID 파일명 생성
+                    String uuidName = UUID.randomUUID().toString() + extension;
+                    // 최종 저장 경로
+                    File dest = new File(productFolder,uuidName);
+                    // 파일 저장 (disk write)
+                    file.transferTo(dest);
+
+                    Product_Images productImages = new Product_Images();
+                    productImages.setProductId(product.getId());
+                    productImages.setOriginalName(originalName);
+                    productImages.setUuidName(uuidName);
+                    productImages.setImageIndex(index);
+                    productImageMapper.InsertProductImage(productImages);
+                    index++;
+                }
+            }
+            return ResponseDTO.of("success",2000,"상품 등록 성공");
+        }catch (Exception e){
+            log.error(e);
+            return ErrorResponseDTO.of(2001, "상품 등록 실패 :"+e.getMessage());
         }
-        return result;
     }
 
     // Select Product by ID
-    public ProductDTO SelectProductById(String id) {
+    public ProductDTO selectProductById(String id) {
         Product product = productMapper.SelectProductById(Long.parseLong(id)); // Mapper 호출
         if (product == null) {
             log.warn("No product found with ID: " + id);
@@ -96,21 +109,21 @@ public class ProductService {
     }
 
     // Select All Products
-    public List<Product> SelectAllProducts() {
+    public List<Product> selectAllProducts() {
         List<Product> products = productMapper.SelectAllProducts(); // 전체 조회
         log.info("All Products: " + products);
         return products;
     }
 
     // Update Product
-    public boolean UpdateProduct(ProductDTO productDTO) {
+    public boolean updateProduct(ProductDTO productDTO) {
         Product product = toEntity(productDTO); // DTO -> Entity 변환
         boolean result = productMapper.UpdateProduct(product); // Update 실행
         return result; // 성공 시 DTO 반환
     }
 
     // Delete Product by ID
-    public boolean DeleteProductById(String id) {
+    public boolean deleteProductById(String id) {
         Product product = productMapper.SelectProductById(Long.parseLong(id)); // 존재 여부 확인
         if (product == null) {
             log.warn("No product found to delete with ID: " + id);
@@ -119,11 +132,21 @@ public class ProductService {
         boolean result = productMapper.DeleteProduct(Long.parseLong(id)); // 삭제 실행
         return result;
     }
-    public List<Product> SelectProductsByPage(int page, int pageSize) {
-        int offset = (page - 1) * pageSize; // 페이지 번호를 기반으로 offset 계산
-        List<Product> products = productMapper.SelectProductsPage(pageSize, offset);
-        log.info("Products (Page: " + page + ", PageSize: " + pageSize + "): " + products);
-        return products;
+    public ResponseDTO selectProductsByPage(int page, int pageSize) {
+        try {
+            int offset = (page - 1) * pageSize;
+            List<ProductResponseCard> dtoList = productMapper.SelectProductsPage(pageSize, offset);
+
+            List<ProductResponseCardDTO> products = dtoList.stream()
+                    .map(this::toDTO)
+                    .collect(Collectors.toList());
+
+            log.info("Products (Page: " + page + ", PageSize: " + pageSize + "): " + products);
+            return DataResponseDTO.of(products, 2004, "상품 목록 조회 성공");
+        } catch (Exception e) {
+            log.error("상품 목록 조회 실패", e);
+            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+        }
     }
     // DTO -> Entity 변환
     private Product toEntity(ProductDTO productDTO) {
@@ -166,6 +189,22 @@ public class ProductService {
                 .isNegotiable(product.getIsNegotiable())
                 .isPossibleMeetYou(product.getIsPossibleMeetYou())
                 .category(product.getCategory())
+                .build();
+    }
+    private ProductResponseCardDTO toDTO(ProductResponseCard dto) {
+        return ProductResponseCardDTO.builder()
+                .id(dto.getId())
+                .title(dto.getTitle())
+                .productName(dto.getProductName())
+                .createdAt(dto.getCreatedAt())
+                .updatedAt(dto.getUpdatedAt())
+                .price(dto.getPrice())
+                .status(dto.getStatus())
+                .sellerId(dto.getSellerId())
+                .isNegotiable(dto.getIsNegotiable())
+                .isPossibleMeetYou(dto.getIsPossibleMeetYou())
+                .category(dto.getCategory())
+                .productImage(dto.getProductImage()) // 이미지 필드 추가
                 .build();
     }
 }
