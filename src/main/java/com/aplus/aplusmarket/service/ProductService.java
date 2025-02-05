@@ -82,30 +82,31 @@ public class ProductService {
     }
 
     // Select Product by ID
-    public ProductDTO selectProductById(String id) {
-        Product product = productMapper.SelectProductById(Long.parseLong(id)); // Mapper 호출
-        if (product == null) {
-            log.warn("No product found with ID: " + id);
-            return null;
+    public ResponseDTO selectProductById(String id) {
+        try{
+            Product product = productMapper.SelectProductById(Long.parseLong(id));
+            ProductDTO productDTO = toDTO(product);
+            List<Product_Images> productImages = productImageMapper.SelectProductImageByProductId(product.getId());
+            // Product_Images -> Product_ImagesDTO 변환
+            List<Product_ImagesDTO> imageDTOs = productImages.stream()
+                    .map(image -> new Product_ImagesDTO(
+                            image.getId(),
+                            image.getProductId(),
+                            image.getOriginalName(),
+                            image.getUuidName(),
+                            image.getImageIndex()
+                    ))
+                    .collect(Collectors.toList());
+
+            // DTO에 이미지 리스트 추가
+            productDTO.setImages(imageDTOs);
+
+            log.info("Selected Product with Images: " + productDTO);
+            return DataResponseDTO.of(productDTO, 2002, "상품 상세 정보 조회 성공");
+        }catch (Exception e){
+            log.error(e);
+            return ErrorResponseDTO.of(2003, "상품 상세 정보 조회 실패 :"+e.getMessage());
         }
-        ProductDTO productDTO = toDTO(product);
-        List<Product_Images> productImages = productImageMapper.SelectProductImageByProductId(product.getId());
-        // Product_Images -> Product_ImagesDTO 변환
-        List<Product_ImagesDTO> imageDTOs = productImages.stream()
-                .map(image -> new Product_ImagesDTO(
-                        image.getId(),
-                        image.getProductId(),
-                        image.getOriginalName(),
-                        image.getUuidName(),
-                        image.getImageIndex()
-                ))
-                .collect(Collectors.toList());
-
-        // DTO에 이미지 리스트 추가
-//        productDTO.setImages(imageDTOs);
-
-        log.info("Selected Product with Images: " + productDTO);
-        return productDTO;
     }
 
     // Select All Products

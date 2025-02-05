@@ -30,10 +30,9 @@ public class ProductController {
     }
     //선택한 상품 정보 가지고 오기
     @GetMapping("/{id}")
-    public ProductDTO selectProductById(@PathVariable String id) {
-        ProductDTO productDTO = productService.selectProductById(id);
-        log.info("products : " + productDTO);
-        return productDTO;
+    public ResponseDTO selectProductById(@PathVariable String id) {
+
+        return productService.selectProductById(id);
     }
     //상품 등록
     @PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
