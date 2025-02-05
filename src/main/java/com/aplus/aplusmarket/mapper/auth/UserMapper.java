@@ -11,6 +11,7 @@ public interface UserMapper {
 
 
     Optional<User> selectUserByUid(@Param("uid") String uid);
+    Optional<User> selectUserById(@Param("id") long id);
     Optional<User> selectUserByEmail(@Param("email") String email);
     Optional<User> selectUserByHp(@Param("hp") String hp);
 
