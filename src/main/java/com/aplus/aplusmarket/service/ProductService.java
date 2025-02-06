@@ -3,7 +3,8 @@ package com.aplus.aplusmarket.service;
 import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
-import com.aplus.aplusmarket.dto.product.ProductDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
+import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductResponseCardDTO;
 import com.aplus.aplusmarket.entity.Product;
@@ -14,13 +15,11 @@ import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -41,12 +40,13 @@ public class ProductService {
     // Insert Product
 
     @Transactional
-    public ResponseDTO insertProduct(ProductDTO productDTO, List<MultipartFile> images) throws IOException {
+    public ResponseDTO insertProduct(ProductRequestDTO productRequestDTO, List<MultipartFile> images){
         try{
-            Product product = toEntity(productDTO);
+            Product product = toEntity(productRequestDTO);
             int index =0;
             boolean result = productMapper.InsertProduct(product);
             File productFolder = new File(USER_DIR+"/"+uploadPath+"/"+product.getId().toString());
+
             if (!productFolder.exists()) {
                 productFolder.mkdirs();
             }
@@ -73,6 +73,8 @@ public class ProductService {
                     productImageMapper.InsertProductImage(productImages);
                     index++;
                 }
+            }else {
+                throw new Exception("Image가 들어오지 않음!");
             }
             return ResponseDTO.of("success",2000,"상품 등록 성공");
         }catch (Exception e){
@@ -85,6 +87,7 @@ public class ProductService {
     public ResponseDTO selectProductById(String id) {
         try{
             Product product = productMapper.SelectProductById(Long.parseLong(id));
+            log.info("product : "+product);
             ProductDTO productDTO = toDTO(product);
             List<Product_Images> productImages = productImageMapper.SelectProductImageByProductId(product.getId());
             // Product_Images -> Product_ImagesDTO 변환
@@ -117,7 +120,7 @@ public class ProductService {
     }
 
     // Update Product
-    public boolean updateProduct(ProductDTO productDTO) {
+    public boolean updateProduct(ProductRequestDTO productDTO) {
         Product product = toEntity(productDTO); // DTO -> Entity 변환
         boolean result = productMapper.UpdateProduct(product); // Update 실행
         return result; // 성공 시 DTO 반환
@@ -150,24 +153,24 @@ public class ProductService {
         }
     }
     // DTO -> Entity 변환
-    private Product toEntity(ProductDTO productDTO) {
+    private Product toEntity(ProductRequestDTO productRequestDTO) {
         return Product.builder()
-                .id(productDTO.getId())
-                .title(productDTO.getTitle())
-                .productName(productDTO.getProductName())
-                .content(productDTO.getContent())
-                .registerLocation(productDTO.getRegisterLocation())
-                .registerIp(productDTO.getRegisterIp())
-                .createdAt(productDTO.getCreatedAt())
-                .updatedAt(productDTO.getUpdatedAt())
-                .reloadAt(productDTO.getReloadAt())
-                .price(productDTO.getPrice())
-                .status(productDTO.getStatus())
-                .deletedAt(productDTO.getDeletedAt())
-                .sellerId(productDTO.getSellerId())
-                .isNegotiable(productDTO.getIsNegotiable())
-                .isPossibleMeetYou(productDTO.getIsPossibleMeetYou())
-                .category(productDTO.getCategory())
+                .id(productRequestDTO.getId())
+                .title(productRequestDTO.getTitle())
+                .productName(productRequestDTO.getProductName())
+                .content(productRequestDTO.getContent())
+                .registerLocation(productRequestDTO.getRegisterLocation())
+                .registerIp(productRequestDTO.getRegisterIp())
+                .createdAt(productRequestDTO.getCreatedAt())
+                .updatedAt(productRequestDTO.getUpdatedAt())
+                .reloadAt(productRequestDTO.getReloadAt())
+                .price(productRequestDTO.getPrice())
+                .status(productRequestDTO.getStatus())
+                .deletedAt(productRequestDTO.getDeletedAt())
+                .sellerId(productRequestDTO.getSellerId())
+                .isNegotiable(productRequestDTO.getIsNegotiable())
+                .isPossibleMeetYou(productRequestDTO.getIsPossibleMeetYou())
+                .category(productRequestDTO.getCategory())
                 .build();
     }
 
@@ -187,6 +190,7 @@ public class ProductService {
                 .status(product.getStatus())
                 .deletedAt(product.getDeletedAt())
                 .sellerId(product.getSellerId())
+                .nickName(product.getNickName())
                 .isNegotiable(product.getIsNegotiable())
                 .isPossibleMeetYou(product.getIsPossibleMeetYou())
                 .category(product.getCategory())

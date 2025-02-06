@@ -1,17 +1,17 @@
 package com.aplus.aplusmarket.controller;
 
 import com.aplus.aplusmarket.dto.ResponseDTO;
-import com.aplus.aplusmarket.dto.product.ProductDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
+import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -35,12 +35,16 @@ public class ProductController {
         return productService.selectProductById(id);
     }
     //상품 등록
-    @PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/insert")
     public ResponseEntity insertProduct(
-            @ModelAttribute ProductDTO productDTO,
-            @RequestPart("images") List<MultipartFile> images) throws IOException {
+            @ModelAttribute ProductRequestDTO productRequestDTO,
+            @RequestPart("images") List<MultipartFile> images,
+            HttpServletRequest request){
+        Long id =(Long)request.getAttribute("id");
+        log.info("id : "+ id);
+        productRequestDTO.setSellerId(id);
         log.info("images : "+ images.size());
-        ResponseDTO responseDTO = productService.insertProduct(productDTO, images);
+        ResponseDTO responseDTO = productService.insertProduct(productRequestDTO, images);
         return ResponseEntity.ok().body(responseDTO);
     }
 
@@ -60,8 +64,8 @@ public class ProductController {
         return productService.selectProductsByPage(page,pageSize);
     }
     @PutMapping("/update")
-    public boolean updateProduct(@RequestBody ProductDTO productDTO){
-        boolean check = productService.updateProduct(productDTO);
+    public boolean updateProduct(@RequestBody ProductRequestDTO productRequestDTO){
+        boolean check = productService.updateProduct(productRequestDTO);
         return check;
     }
 }
