@@ -1,4 +1,4 @@
-package com.aplus.aplusmarket.entity;
+package com.aplus.aplusmarket.dto.product.requests;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class ProductRequestDTO { // 상품 상세 정보 등록 데이터
     private Long id;
     private String title;
     private String productName;
@@ -24,7 +24,6 @@ public class Product {
     private String status;
     private LocalDateTime deletedAt;
     private Long sellerId;
-    private String nickName;
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;

@@ -1,8 +1,10 @@
 package com.aplus.aplusmarket.dto.product.response;
 
+import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -10,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductResponseCardDTO {
+public class ProductResponseCardDTO { //상품 리스트 화면 출력 화면
     private Long id;
     private String title;
     private String productImage;

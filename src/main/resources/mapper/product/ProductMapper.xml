@@ -14,7 +14,8 @@
 
     <!-- SELECT BY ID -->
     <select id="SelectProductById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product">
-        SELECT * FROM tb_product WHERE id = #{id}
+        <!-- SELECT * FROM tb_product WHERE id = #{id} -->
+        SELECT p.*, u.nickname FROM tb_product AS p LEFT JOIN tb_user u ON p.seller_id = u.id WHERE p.id = #{id}
     </select>
 
     <!-- SELECT ALL -->
