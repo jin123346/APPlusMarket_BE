@@ -1,12 +1,5 @@
 package com.aplus.aplusmarket.mapper.chat;
-
-import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
-import com.aplus.aplusmarket.dto.chat.response.ChatMessageResponseDTO;
-import com.aplus.aplusmarket.dto.chat.response.ChatRoomCardResponseDTO;
-
-import com.aplus.aplusmarket.dto.chat.response.ChatRoomSQLResultDTO;
-import com.aplus.aplusmarket.dto.chat.response.UserCardDTO;
-import com.aplus.aplusmarket.entity.ChatMessage;
+import com.aplus.aplusmarket.dto.chat.response.*;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -18,32 +11,51 @@ import java.util.List;
 
 @Mapper
 public interface ChatRoomMapper {
-    // TODO : java 단에서 now 로 보내주는 것으로 바꾸기
     @Insert("INSERT INTO tb_chat_message (chat_room_id, content, user_id, created_at) " +
             "VALUES (#{chatRoomId}, #{content}, #{senderId}, #{createdAt}) ")
-    @Options(useGeneratedKeys = true, keyProperty = "messageId")
-    int insertMessage(ChatMessageCreateDTO chatMessageCreateDTO);
+    @Options(useGeneratedKeys = true, keyProperty = "chatMessageId")
+    int insertMessage(ChatMessageDTO chatMessageCreateDTO);
+
+    @Select("SELECT " +
+            "room.id AS chatRoomId, " +
+            "user2.id AS userId, " +
+            "user2.nickname AS userNickname, " +
+            "user2.profile_img AS userImage, " +
+            "product.id AS productId, " +
+            "product.product_images AS productThumbnail, " +
+            "room.seller_id AS sellerId " +
+            "FROM " +
+            "tb_chat_room room " +
+            "JOIN tb_chat_mapping mapping ON room.id = mapping.chat_room_id " +
+            "JOIN tb_product product ON room.product_id = product.id " +
+            "JOIN tb_user user2 ON " +
+            "(room.seller_id != #{currentUserId} AND room.seller_id = user2.id) OR " +
+            "(mapping.user_id != #{currentUserId} AND mapping.user_id = user2.id) " +
+            "WHERE (room.seller_id = #{currentUserId} OR mapping.user_id = #{currentUserId}) " +
+            "AND mapping.deleted_at IS NULL")
+    List<ChatRoomCardResponseDTO> selectChatRoomsByUserId(@Param("currentUserId") int currentUserId);
+
 
     // 유저아이디로 채팅방 목록 조회
-    @Select("""
-            SELECT c.id AS chatRoomId,
-                   p.product_images AS productThumbnail,
-                   p.id AS productId,
-                   CASE WHEN c.seller_id = #{myUserId} THEN TRUE ELSE FALSE END AS isSeller,
-                   u.profile_img AS userImage,
-                   u.name AS userName,
-                   m.content AS recentMessage,
-                   m.created_at AS messageCreatedAt
-            FROM tb_chat_room AS c
-            LEFT JOIN tb_chat_message AS m ON c.id = m.chat_room_id
-            JOIN tb_chat_mapping AS cm ON cm.chat_room_id = c.id
-            JOIN tb_product AS p ON p.id = c.product_id
-            JOIN tb_user AS u ON u.id = cm.user_id
-            WHERE cm.user_id != #{myUserId} -- 상대방 사용자 정보만 가져오기
-            ORDER BY m.created_at DESC
-            LIMIT 1
-            """)
-    List<ChatRoomCardResponseDTO> selectChatRoomsByUserId(@Param("myUserId") int myUserId);
+//    @Select("""
+//            SELECT c.id AS chatRoomId,
+//                   p.product_images AS productThumbnail,
+//                   p.id AS productId,
+//                   CASE WHEN c.seller_id = #{myUserId} THEN TRUE ELSE FALSE END AS isSeller,
+//                   u.profile_img AS userImage,
+//                   u.name AS userName,
+//                   m.content AS recentMessage,
+//                   m.created_at AS createAt
+//            FROM tb_chat_room AS c
+//            LEFT JOIN tb_chat_message AS m ON c.id = m.chat_room_id
+//            JOIN tb_chat_mapping AS cm ON cm.chat_room_id = c.id
+//            JOIN tb_product AS p ON p.id = c.product_id
+//            JOIN tb_user AS u ON u.id = cm.user_id
+//            WHERE cm.user_id != #{myUserId} -- 상대방 사용자 정보만 가져오기
+//            ORDER BY m.created_at DESC
+//            LIMIT 1
+//            """)
+//    List<ChatRoomCardResponseDTO> selectChatRoomsByUserId(@Param("myUserId") int myUserId);
 
     @Select("""
     SELECT 
@@ -58,7 +70,7 @@ public interface ChatRoomMapper {
         u.profile_img AS profileImage,
         rm.id AS chatMessageId,
         rm.content AS content,
-        rm.created_at AS createAt
+        rm.created_at AS createdAt
     FROM tb_chat_room AS c
     JOIN tb_product AS p ON p.id = c.product_id
     JOIN tb_chat_mapping AS cm ON cm.chat_room_id = c.id
@@ -81,6 +93,7 @@ public interface ChatRoomMapper {
     SELECT 
         u.id AS userId,
         u.name AS userName,
+        u.nickname AS nickname,
         u.profile_img AS profileImage
     FROM tb_user AS u
     JOIN tb_chat_mapping AS cm ON u.id = cm.user_id

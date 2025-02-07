@@ -3,12 +3,8 @@ package com.aplus.aplusmarket.service;
 import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
-import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
 import com.aplus.aplusmarket.dto.chat.response.*;
-import com.aplus.aplusmarket.entity.ChatMessage;
-import com.aplus.aplusmarket.entity.ChatRoom;
 import com.aplus.aplusmarket.mapper.chat.ChatRoomMapper;
-import com.nimbusds.oauth2.sdk.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.time.LocalTime.now;
 
 @Service
 @RequiredArgsConstructor
@@ -29,17 +24,21 @@ public class ChatService {
     final ChatRoomMapper chatRoomMapper;
     final SimpMessagingTemplate messagingTemplate;
 
-    public ChatMessageCreateDTO insertMessage(ChatMessageCreateDTO chatMessage) {
+    /** 메시지 Insert 메서드
+     * @param chatMessage
+     * @return
+     */
+    public ChatMessageDTO insertMessage(ChatMessageDTO chatMessage) {
         try {
 
-            chatMessage.setCreatedAt(LocalDateTime.now());
+            chatMessage.setCreatedAt(LocalDateTime.now().toString());
             log.error(chatMessage);
             int result = chatRoomMapper.insertMessage(chatMessage);
             if(result > 0){
                 return chatMessage;
             }else {
-
-                throw new RuntimeException("Insert chat message failed");            }
+                throw new RuntimeException("");
+            }
         }
         catch (Exception e) {
             log.error(e);
@@ -47,7 +46,10 @@ public class ChatService {
         }
     }
 
-    // 유저 아이디로 채팅방 목록 조회 - 2025/02/03 check
+    /** user_id로 채팅방 목록 조회
+     * @param userId
+     * @return
+     */
     public ResponseDTO selectChatRoomsByUserId(int userId) {
         try {
             log.info("채팅방 조회 요청 userId : {}", userId);
@@ -71,7 +73,10 @@ public class ChatService {
 
     }
 
-    // 채팅방 아이디로 채팅방 상세 조회 - 2025/02/03 check
+    /** id로 채팅방 상세 조회
+     * @param chatRoomId
+     * @return
+     */
     @Transactional
     public ResponseDTO selectChatRoomDetailsById(int chatRoomId) {
 
@@ -79,12 +84,12 @@ public class ChatService {
             if(chatRoomMapper.existsChatRoomById(chatRoomId)) {
 
                 List<ChatRoomSQLResultDTO> chatRoomSQLResult = chatRoomMapper.selectChatRoomDetailsById(chatRoomId);
+                log.error("💣 최종 chatRoomSQLResult: {}", chatRoomSQLResult);
                 List<UserCardDTO> participants = chatRoomMapper.selectParticipantsByChatRoomId(chatRoomId);
 
                 ChatRoomDetailDTO chatRoomResponseDTO = toChatRoomDetailDTO(chatRoomSQLResult,participants);
-                // TODO : 참여자를 넣어주는 로직 추가 09:00 시작
 
-                System.out.println(chatRoomResponseDTO);
+                log.error("💣 최종 결과값: {}", chatRoomResponseDTO);
                 return new DataResponseDTO<>(chatRoomResponseDTO, 4000, "채팅방 상세 조회 성공");
             }
             return ResponseDTO.builder()
@@ -99,35 +104,45 @@ public class ChatService {
         }
     }
 
+    /** SQL문의 결과를 DTO로 매핑하는 메서드
+     * @param sqlResultList
+     * @param participants
+     * @return ChatRoomDetailDTO
+     */
     // SQL 결과 DTO ResponseDTO로 변환 완료
-    public ChatRoomDetailDTO toChatRoomDetailDTO(List<ChatRoomSQLResultDTO> sqlResultList,List<UserCardDTO> participants) {
-        // 하나의 채팅방만 있다고 가정하므로, 첫 번째 결과만 사용
+    public ChatRoomDetailDTO toChatRoomDetailDTO(List<ChatRoomSQLResultDTO> sqlResultList,List<UserCardDTO> participants) throws Exception {
+
+
         if (sqlResultList == null || sqlResultList.isEmpty()) {
-            return null;
+            throw new Exception("해당하는 아이디로 조회되는 채팅이 없습니다");
         }
-        // 첫 번째 채팅방 정보를 가져옵니다.
+
         ChatRoomSQLResultDTO firstResult = sqlResultList.get(0);
 
-        // ChatRoomDetailDTO를 빌더를 이용해 생성
-        return ChatRoomDetailDTO.builder()
-                .chatRoomId(firstResult.getChatRoomId())
-                .productCard(ProductCardDTO.builder()
-                        .productId(firstResult.getProductId())
-                        .productName(firstResult.getProductName())
-                        .thumbnailImage(firstResult.getProductThumbnail())
-                        .price(firstResult.getPrice())
-                        .isNegotiable(firstResult.getIsNegotiable())
-                        .build())
-                .participants(participants)
-                .messages(sqlResultList.stream()
-                        .map(result -> ChatMessageDTO.builder()
-                                .messageId(result.getChatMessageId())
-                                .senderId(result.getUserId())
-                                .content(result.getContent())
-                                .createdAt(result.getCreateAt())
-                                .build())
-                        .collect(Collectors.toList())) // 메시지 리스트
-                .build();
+        try{
+            return ChatRoomDetailDTO.builder()
+                    .chatRoomId(firstResult.getChatRoomId())
+                    .productCard(ProductCardDTO.builder()
+                            .productId(firstResult.getProductId())
+                            .productName(firstResult.getProductName())
+                            .thumbnailImage(firstResult.getProductThumbnail())
+                            .price(firstResult.getPrice())
+                            .isNegotiable(firstResult.getIsNegotiable())
+                            .build())
+                    .participants(participants)
+                    .messages(sqlResultList.stream()
+                            .map(result -> ChatMessageDTO.builder()
+                                    .chatMessageId(result.getChatMessageId())
+                                    .senderId(result.getUserId())
+                                    .content(result.getContent())
+                                    .createdAt(result.getCreatedAt())
+                                    .build())
+                            .collect(Collectors.toList())) // 메시지 리스트
+                    .build();
+        }catch(Exception e) {
+            log.error(e);
+            throw e;
+        }
     }
 }
 

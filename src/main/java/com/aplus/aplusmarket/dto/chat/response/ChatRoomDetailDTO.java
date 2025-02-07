@@ -17,10 +17,6 @@ public class ChatRoomDetailDTO {
     private ProductCardDTO productCard;
     private List<UserCardDTO> participants;
     private List<ChatMessageDTO> messages; // TODO : Message - Pagination
-
-
-        // ChatRoomSQLResultDTO List 를 ChatRoomDetailDTO 로 변환하는 메서드
-
     }
 
 

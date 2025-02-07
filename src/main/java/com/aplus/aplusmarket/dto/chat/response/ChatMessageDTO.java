@@ -11,11 +11,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessageDTO {
-    private Integer messageId;
-    private Integer senderId;
-    private String content;
-    private String createdAt;
-    private String deletedAt;
-    private Boolean isRead;}
 
+    private int chatMessageId;
+    // 저장된 후 messageId를 받아오기 위하여
+    private int chatRoomId;
+    private String content;
+    private int senderId;
+    private String createdAt;
+// 저장된 후 createdAt을 사용하려면 select 한번 더 해야함
+// 그래서 java 단에서 현재값 지정 후 데이터 삽입
+}
 
