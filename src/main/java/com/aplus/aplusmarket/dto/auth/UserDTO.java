@@ -31,7 +31,6 @@ public class UserDTO {
     private int sellCount;
     private String role;   // USER, ADMIN 두개
 
-
     public User register() {
         return User.builder()
                 .uid(uid)

@@ -18,4 +18,5 @@ public class MyInfoUser {
     LocalDateTime birthDay;
     String hp;
     String email;
+    String profileImg;
 }

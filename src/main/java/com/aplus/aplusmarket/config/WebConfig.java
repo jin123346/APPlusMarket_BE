@@ -20,19 +20,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 상대 경로를 사용하여 정적 리소스로 접근 가능하도록 설정
-        registry.addResourceHandler("/uploads/**")
+        registry.addResourceHandler("uploads/**")
                 .addResourceLocations("file:" + USER_DIR + "/" + uploadPath + "/");
     }
-//    @Override
-//    public void addCorsMappings(CorsRegistry registry) {
-//
-//        System.out.println("addCorsMappings11111111111111111");
-//        registry.addMapping("/**")
-//                .allowedOriginPatterns("http://10.0.2.2:8080", "http://localhost:8080", "http://127.0.0.1:8080")
-//               .allowedOrigins("*")
-//                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-//                .allowedHeaders("*")
-//                .allowCredentials(true);
-//                //.allowCredentials(false);
-//    }
+
 }

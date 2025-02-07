@@ -45,6 +45,8 @@ public class ProductService {
             Product product = toEntity(productRequestDTO);
             int index =0;
             boolean result = productMapper.InsertProduct(product);
+
+
             File productFolder = new File(USER_DIR+"/"+uploadPath+"/"+product.getId().toString());
 
             if (!productFolder.exists()) {
