@@ -13,11 +13,13 @@ public class ChatRoomCardResponseDTO {
     private int chatRoomId;
 
     private String productThumbnail;
-
     private int productId;
-    private Boolean isSeller; // 채팅방의 제품 판매자
+    private int sellerId;// 채팅방의 제품 판매자
+
+    private int userId;
+    private String userNickname;
     private String userImage;
-    private String userName;
+
     private String recentMessage;
     private String messageCreatedAt;
 

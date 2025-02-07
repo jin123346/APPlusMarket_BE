@@ -2,8 +2,6 @@ package com.aplus.aplusmarket.dto.chat.response;
 
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @ToString
@@ -23,7 +21,7 @@ public class ChatRoomSQLResultDTO {
     private String profileImage;
     private int chatMessageId;
     private String content;
-    private String createAt;
+    private String createdAt;
 
 
 
