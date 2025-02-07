@@ -7,9 +7,9 @@ spring:
         livereload:
             enabled: true
     datasource:
-        url: jdbc:mysql://localhost:3306/applusmarket?serverTimezone=Asia/Seoul
-        username: root
-        password: asd1234
+        url: jdbc:mysql://43.202.32.28:3306/applusmarket?serverTimezone=Asia/Seoul
+        username: applus
+        password: Qwe1234~!
         driver-class-name: com.mysql.cj.jdbc.Driver
         mybatis:
             mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
@@ -38,19 +38,21 @@ mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
     config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
     type-aliases-package: com.aplus.aplusmarket.entity # TypeAlias 사용할 패키지 경로
-
-
 server:
     port: 8080
     servlet:
         context-path: /
     address: 0.0.0.0
 
-
 logging:
     level:
         org.mybatis: DEBUG
         org.springframework: INFO
+token:
+    jwt:
+        secret: "UexkyuXOpB7ApyOmIXm0zn23EE/ZLlbdRHFIronNyvHb1NoipAZHj2App1HBm8RwCSmHUzzWYRRL61OyAST2TQ=="
+        issuer: "applusmarket"
+
 #2024.02.04 이도영 이미지 파일 경로 추가
 file:
     upload:

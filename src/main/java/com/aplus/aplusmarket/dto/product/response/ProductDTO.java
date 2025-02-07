@@ -1,5 +1,6 @@
-package com.aplus.aplusmarket.dto.product;
+package com.aplus.aplusmarket.dto.product.response;
 
+import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDTO {
+public class ProductDTO { // 상품 상세 정보 출력 데이터
     private Long id;
     private String title;
     private String productName;
@@ -25,8 +26,9 @@ public class ProductDTO {
     private String status;
     private LocalDateTime deletedAt;
     private Long sellerId;
+    private String nickName;
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
-
+    private List<Product_ImagesDTO> images;
 }

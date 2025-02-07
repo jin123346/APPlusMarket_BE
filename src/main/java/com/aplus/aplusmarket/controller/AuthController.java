@@ -4,11 +4,14 @@ import com.aplus.aplusmarket.config.JwtTokenProvider;
 import com.aplus.aplusmarket.dto.*;
 import com.aplus.aplusmarket.dto.auth.requset.LoginRequest;
 import com.aplus.aplusmarket.dto.auth.UserDTO;
+import com.aplus.aplusmarket.dto.auth.response.MyInfoUser;
 import com.aplus.aplusmarket.entity.User;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import com.aplus.aplusmarket.service.AuthService;
+import com.aplus.aplusmarket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -16,10 +19,12 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.transform.OutputKeys;
 import java.util.Optional;
 
 /*
     20024.01.27 하진희 user login/ register controller
+    20024.02.04 하진희 myinfo 부분 추가
  */
 
 @RestController
@@ -31,6 +36,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserMapper userMapper;
+    private final UserService userService;
 
 
     @PostMapping("/login")
@@ -92,6 +98,46 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.of(1007, "알 수 없는 오류가 발생했습니다."));
 
+    }
+
+
+    //나의 정보 기능
+    @GetMapping("/myInfo")
+    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken") String refreshToken){
+        Long id =(Long)request.getAttribute("id");
+        log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
+        String uid="";
+        ResponseDTO responseDTO;
+        if(id == null || id == 0){
+             uid = authService.getIdWithRefreshToken(refreshToken);
+            if(uid==null) {
+                //토큰이 제대로 전달되지 않은 경우
+                return ResponseEntity.ok().body(ErrorResponseDTO.of(1202, "토큰이 사라짐"));
+            }
+            responseDTO = userService.selectUserByUidForMyInfo(uid);
+
+        }else{
+            //유저 정보 조회
+            responseDTO = userService.selectUserByIdForMyInfo(id);
+        }
+
+
+        // 조회시 에러 상황
+        if(responseDTO instanceof  ErrorResponseDTO){
+            return ResponseEntity.ok().body((ErrorResponseDTO)responseDTO);
+        }
+
+        return ResponseEntity.ok().body(responseDTO);
+
+    }
+
+    // 나의 정보 수정 요청
+    @PostMapping("/myInfo")
+    public ResponseEntity updateUserInfo(@RequestBody MyInfoUser myInfoUser){
+
+       ResponseDTO responseDTO =  userService.updateUserByIdForMyInfo(myInfoUser);
+
+        return ResponseEntity.ok().body(responseDTO);
     }
 
 
