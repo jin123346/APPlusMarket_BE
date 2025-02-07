@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface TokenHistoryRepository extends MongoRepository<TokenHistory,String> {
 
     Optional<TokenHistory> findByRefreshToken(String token);
+
 }

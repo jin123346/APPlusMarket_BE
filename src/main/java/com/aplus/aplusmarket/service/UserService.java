@@ -4,14 +4,17 @@ import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.auth.requset.FindUserRequestDTO;
+import com.aplus.aplusmarket.dto.auth.requset.ProfileUpdateRequestDTO;
 import com.aplus.aplusmarket.dto.auth.response.MyInfoUser;
 import com.aplus.aplusmarket.entity.User;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -22,6 +25,7 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final FileService fileService;
 
     public ResponseDTO selectUserByIdForMyInfo(Long id){
 
@@ -70,6 +74,7 @@ public class UserService {
                     .nickName(user.getNickname())
                     .email(user.getEmail())
                     .birthDay(user.getBirthday())
+                    .profileImg(user.getProfileImg())
                     .build();
             log.info("user 정보 : {}",myInfoUser);
 
@@ -176,6 +181,44 @@ public class UserService {
         }
 
     }
+
+
+
+
+    public ResponseDTO profileUpdate(MultipartFile images,int id)  {
+        try{
+            Optional<User> opt = userMapper.selectUserById(id);
+            if(opt.isEmpty()){
+                return ErrorResponseDTO.of(1211,"해당하는 유저가 없습니다.");
+            }
+            User user = opt.get();
+
+            String savedFileName = fileService.getUploadPathForProfile(images);
+
+            if (savedFileName == "") {
+                return ErrorResponseDTO.of(1211,"파일 업로드 중 문제가 발생했습니다.");
+            }
+
+            int result = userMapper.updateProfileImage(user.getId(),savedFileName);
+
+            if(result != 1){
+                return ErrorResponseDTO.of(1211,"이미지 업데이트 도중 문제 발생");
+            }
+
+            return DataResponseDTO.of(savedFileName,1210,"프로필 이미지 업데이트 성공");
+
+
+        }catch (Exception e){
+            log.error("이미지 업데이트중 에러 발생 : {}",e.getMessage());
+            return ErrorResponseDTO.of(1211,"이미지 업데이트 도중 문제 발생");
+
+        }
+
+    }
+
+
+
+
 
 
 

@@ -70,13 +70,13 @@ public class AuthController {
 
 
     @GetMapping("/refresh")
-    public ResponseEntity refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken){
+    public ResponseEntity refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken,HttpServletResponse resp){
         log.info("Refresh Token!! 요청 들어옴 "+refreshToken);
         if(refreshToken == null){
             ResponseDTO responseDTO = ErrorResponseDTO.of(1005,"토큰이 존재하지않습니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
         }
-        ResponseDTO responseDTO = authService.refreshToken(refreshToken);
+        ResponseDTO responseDTO = authService.refreshToken(refreshToken,resp);
 
         // ✅ 실패 응답인 경우
         if (responseDTO instanceof ErrorResponseDTO) {
@@ -85,13 +85,11 @@ public class AuthController {
 
         // ✅ 성공 응답인 경우 (새 Access Token 포함)
         if (responseDTO instanceof DataResponseDTO) {
-            DataResponseDTO<String> dataResponseDTO = (DataResponseDTO<String>) responseDTO;
-            String newAccessToken = dataResponseDTO.getData();
+            DataResponseDTO dataResponseDTO = (DataResponseDTO) responseDTO;
 
             // ✅ 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
             return ResponseEntity.ok()
-                    .header("Authorization", "Bearer " + newAccessToken)
-                    .body(ResponseDTO.of("success", 1000, "Access Token이 재발급되었습니다."));
+                    .body(dataResponseDTO);
         }
 
         // ✅ 예외 상황 (이론적으로 발생하지 않지만, 예외 처리를 위해 추가)
@@ -139,6 +137,23 @@ public class AuthController {
 
         return ResponseEntity.ok().body(responseDTO);
     }
+
+    @GetMapping("/withdrawal/{id}")
+    public ResponseEntity updateWithdrawal(@PathVariable("id") long id,HttpServletRequest request,@CookieValue(value = "refreshToken", required = false) String refreshToken,HttpServletResponse resp){
+       // ResponseDTO responseDTO = userService;
+        long token_id = (long) request.getAttribute("id");
+        if(id != token_id){
+            return ResponseEntity.ok().body( ErrorResponseDTO.of(1125 ,"토큰정보와 일치하지 않습니다."));
+        }
+
+        ResponseDTO responseDTO = authService.updateByUserForWithdrawal(id,refreshToken,resp);
+
+
+        return ResponseEntity.ok().body(responseDTO);
+    }
+
+
+
 
 
 }
