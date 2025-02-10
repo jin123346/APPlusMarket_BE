@@ -2,18 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aplus.aplusmarket.mapper.product.ProductImageMapper">
 
-    <!-- INSERT -->
+    <!-- INSERT 상품 이미지 등록 -->
     <insert id="InsertProductImage" parameterType="com.aplus.aplusmarket.entity.Product_Images">
         INSERT INTO tb_product_image (product_id, original_name, uuid_name,image_index)
         VALUES (#{productId}, #{originalName}, #{uuidName},#{imageIndex})
     </insert>
 
-    <!-- SELECT BY ID -->
+    <!-- SELECT BY ID 상품 이미지 선택-->
     <select id="SelectProductImageByProductId" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product_Images">
         SELECT * FROM tb_product_image WHERE product_id = #{productId}
     </select>
 
-    <!-- DELETE -->
+    <!-- DELETE 상품 이미지 삭제-->
     <delete id="DeleteProductImageByProductId" parameterType="long">
         DELETE FROM tb_product_image WHERE product_id = #{productId}
     </delete>

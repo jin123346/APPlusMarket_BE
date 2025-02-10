@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aplus.aplusmarket.mapper.product.ProductMapper">
 
-    <!-- INSERT -->
+    <!-- INSERT  상품 등록-->
     <insert id="InsertProduct" parameterType="com.aplus.aplusmarket.entity.Product" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_product (title, product_name, content, register_location, register_ip,
                              created_at, updated_at, reload_at, price, status,  seller_id,
@@ -12,13 +12,13 @@
                 #{isNegotiable}, #{isPossibleMeetYou}, #{category})
     </insert>
 
-    <!-- SELECT BY ID -->
+    <!-- SELECT BY ID 상품 아이디를 통해 상품 상세 정보와 판매자 닉네임을 가지고 옵니다-->
     <select id="SelectProductById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product">
         <!-- SELECT * FROM tb_product WHERE id = #{id} -->
         SELECT p.*, u.nickname FROM tb_product AS p LEFT JOIN tb_user u ON p.seller_id = u.id WHERE p.id = #{id}
     </select>
 
-    <!-- SELECT ALL -->
+    <!-- SELECT ALL 상품 정보 모두를 가지고 옵니다-->
     <select id="SelectAllProducts" resultType="com.aplus.aplusmarket.entity.Product">
             SELECT * FROM tb_product
     </select>
@@ -33,6 +33,7 @@
 <!--            is_possible_meet_you = #{isPossibleMeetYou}, category = #{category}-->
 <!--        WHERE id = #{id}-->
 <!--    </update>-->
+    <!--업데이트 기능이며 테스트를 거친 코드는 아닙니다.     -->
     <update id="UpdateProduct" parameterType="com.aplus.aplusmarket.entity.Product">
         UPDATE tb_product
         <set>
@@ -54,10 +55,11 @@
     </update>
 
 
-    <!-- DELETE -->
+    <!-- DELETE 삭제 기능입니다.-->
     <delete id="DeleteProduct" parameterType="long">
         DELETE FROM tb_product WHERE id = #{id}
     </delete>
+    <!--상품 페이징 처리해서 가지고 오는 SQL 입니다 이때 첫번재 이미지를 같이 조인해서 가지고 옵니다.    -->
     <select id="SelectProductsPage" resultType="com.aplus.aplusmarket.entity.ProductResponseCard">
         SELECT
             p.id,
