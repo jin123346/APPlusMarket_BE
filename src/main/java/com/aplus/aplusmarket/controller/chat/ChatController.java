@@ -37,4 +37,8 @@ public class ChatController {
         return chatService.selectChatRoomDetailsById(chatRoomId);
     }
 
+    @GetMapping("/chat-rooms/id")
+    public ResponseDTO getChatRoomIdsByUserId(@RequestParam("userId") int userId) {
+        return chatService.selectChatRoomIdsByUserId(userId);
+    }
 }

@@ -24,9 +24,9 @@ public class ChatService {
     final ChatRoomMapper chatRoomMapper;
     final SimpMessagingTemplate messagingTemplate;
 
-    /** 메시지 Insert 메서드
+    /** 메시지 Insert
      * @param chatMessage
-     * @return
+     * @return ChatMessageDTO
      */
     public ChatMessageDTO insertMessage(ChatMessageDTO chatMessage) {
         try {
@@ -75,7 +75,7 @@ public class ChatService {
 
     /** id로 채팅방 상세 조회
      * @param chatRoomId
-     * @return
+     * @return ChatMessageDTO
      */
     @Transactional
     public ResponseDTO selectChatRoomDetailsById(int chatRoomId) {
@@ -85,8 +85,8 @@ public class ChatService {
 
                 List<ChatRoomSQLResultDTO> chatRoomSQLResult = chatRoomMapper.selectChatRoomDetailsById(chatRoomId);
                 log.error("💣 최종 chatRoomSQLResult: {}", chatRoomSQLResult);
-                List<UserCardDTO> participants = chatRoomMapper.selectParticipantsByChatRoomId(chatRoomId);
 
+                List<UserCardDTO> participants = chatRoomMapper.selectParticipantsByChatRoomId(chatRoomId);
                 ChatRoomDetailDTO chatRoomResponseDTO = toChatRoomDetailDTO(chatRoomSQLResult,participants);
 
                 log.error("💣 최종 결과값: {}", chatRoomResponseDTO);
@@ -104,13 +104,13 @@ public class ChatService {
         }
     }
 
-    /** SQL문의 결과를 DTO로 매핑하는 메서드
+
+    /** SQL 문의 결과를 ChatRoomDetailDTO 로 매핑
      * @param sqlResultList
      * @param participants
      * @return ChatRoomDetailDTO
      */
-    // SQL 결과 DTO ResponseDTO로 변환 완료
-    public ChatRoomDetailDTO toChatRoomDetailDTO(List<ChatRoomSQLResultDTO> sqlResultList,List<UserCardDTO> participants) throws Exception {
+    private ChatRoomDetailDTO toChatRoomDetailDTO(List<ChatRoomSQLResultDTO> sqlResultList,List<UserCardDTO> participants) throws Exception {
 
 
         if (sqlResultList == null || sqlResultList.isEmpty()) {
@@ -143,6 +143,17 @@ public class ChatService {
             log.error(e);
             throw e;
         }
+    }
+
+    public ResponseDTO selectChatRoomIdsByUserId(int userId) {
+        List<Integer> result = null;
+        try {
+           result = chatRoomMapper.selectChatIdByUserId(userId);
+        }catch (Exception e) {
+            log.error(e);
+            return DataResponseDTO.of(result,4001,"해당하는 Id로 조회되는 채팅방이 없습니다.");
+        }
+        return DataResponseDTO.of(result, 4000, "채팅방 아이디 목록 조회 성공");
     }
 }
 

@@ -23,4 +23,4 @@ import org.springframework.web.socket.config.annotation.*;
                 .setAllowedOrigins("*")
                 .withSockJS();
     }
-    }
+}
