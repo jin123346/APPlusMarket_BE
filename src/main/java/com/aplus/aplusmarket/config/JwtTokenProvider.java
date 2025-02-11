@@ -58,11 +58,12 @@ public class JwtTokenProvider {
      * @param nickName
      * @return 토큰
      */
-    public String createToken(long id, String uid,String nickName) {
+    public String createToken(long id, String uid,String nickName,String profileImg) {
 
         Claims claims = claims().setSubject(uid);
         claims.put("id", id);
         claims.put("nickName", nickName);
+        claims.put("profile",profileImg);
         Date now = new Date();
         Date expiry  = new Date(now.getTime() + validityInMilliseconds);
         log.info("issuer : {}",issuer);

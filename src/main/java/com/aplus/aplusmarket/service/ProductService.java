@@ -37,16 +37,19 @@ public class ProductService {
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
     private final String USER_DIR = System.getProperty("user.dir");
-    // Insert Product
 
+    //상품 이미지 등록
     @Transactional
     public ResponseDTO insertProduct(ProductRequestDTO productRequestDTO, List<MultipartFile> images){
         try{
             Product product = toEntity(productRequestDTO);
             int index =0;
+            //엔티티로 변경한 product 의 정보를 먼저 등록 합니다.
             boolean result = productMapper.InsertProduct(product);
+            // 이미지 파일을 등록할 경로를 지정 합니다. 이때 InsertProduct로 전달 받은 product.getId()를 사용합니다
+            // 경로는 uploads/상품번호/ 이렇게 저장 됩니다.
             File productFolder = new File(USER_DIR+"/"+uploadPath+"/"+product.getId().toString());
-
+            //경로가 없을경우 폴더를 생성 하는데 기본적으로는 그냥 생성 한다고 보면 됩니다.
             if (!productFolder.exists()) {
                 productFolder.mkdirs();
             }
@@ -65,12 +68,14 @@ public class ProductService {
                     // 파일 저장 (disk write)
                     file.transferTo(dest);
 
+                    // 상품 이미지에 포함 해야 하는 정보들을 저장 합니다.
                     Product_Images productImages = new Product_Images();
                     productImages.setProductId(product.getId());
                     productImages.setOriginalName(originalName);
                     productImages.setUuidName(uuidName);
                     productImages.setImageIndex(index);
                     productImageMapper.InsertProductImage(productImages);
+                    //index 값을 증가 시켜 몆번째 사진인지를 구분 지어 줍니다.
                     index++;
                 }
             }else {
@@ -83,12 +88,14 @@ public class ProductService {
         }
     }
 
-    // Select Product by ID
+    // 상품 세부 정보 가지고 오는 기능
     public ResponseDTO selectProductById(String id) {
         try{
+            //전달 받은 상품 번호를 이용하여 상품의 세부 정보를 가지고 옵니다.
             Product product = productMapper.SelectProductById(Long.parseLong(id));
             log.info("product : "+product);
             ProductDTO productDTO = toDTO(product);
+            // 상품 번호를 입력받아 등록되어 있는 상품 이미지를 리스트 형식으로 가지고 옵니다
             List<Product_Images> productImages = productImageMapper.SelectProductImageByProductId(product.getId());
             // Product_Images -> Product_ImagesDTO 변환
             List<Product_ImagesDTO> imageDTOs = productImages.stream()
@@ -112,22 +119,23 @@ public class ProductService {
         }
     }
 
-    // Select All Products
+    // 전체 상품 가지고 오기 (사용하지 않습니다)
     public List<Product> selectAllProducts() {
         List<Product> products = productMapper.SelectAllProducts(); // 전체 조회
         log.info("All Products: " + products);
         return products;
     }
 
-    // Update Product
+    // 상품 업데이트 (아직 기능 구현 하지 않았습니다.)
     public boolean updateProduct(ProductRequestDTO productDTO) {
         Product product = toEntity(productDTO); // DTO -> Entity 변환
         boolean result = productMapper.UpdateProduct(product); // Update 실행
         return result; // 성공 시 DTO 반환
     }
 
-    // Delete Product by ID
+    // 상품 삭제 기능(현재 상품에 대한 데이터를 삭제하는 식으로 되어 있습니다. 해당 기능은 조금 수정 해야 할것으로 보입니다.)
     public boolean deleteProductById(String id) {
+        //현재는 상품 먼저 삭제하고 있는데 이미지 부터 먼저 삭제하는것부터 해야 합니다.
         Product product = productMapper.SelectProductById(Long.parseLong(id)); // 존재 여부 확인
         if (product == null) {
             log.warn("No product found to delete with ID: " + id);
@@ -136,6 +144,8 @@ public class ProductService {
         boolean result = productMapper.DeleteProduct(Long.parseLong(id)); // 삭제 실행
         return result;
     }
+
+    //상품 페이징 처리 기능 (메인 화면)
     public ResponseDTO selectProductsByPage(int page, int pageSize) {
         try {
             int offset = (page - 1) * pageSize;
@@ -196,6 +206,8 @@ public class ProductService {
                 .category(product.getCategory())
                 .build();
     }
+
+    //상품 리스트 화면 출력 에서 데이터 변경
     private ProductResponseCardDTO toDTO(ProductResponseCard dto) {
         return ProductResponseCardDTO.builder()
                 .id(dto.getId())

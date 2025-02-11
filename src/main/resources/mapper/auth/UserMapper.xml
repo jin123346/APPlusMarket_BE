@@ -47,4 +47,18 @@
         WHERE id=#{id}
     </update>
 
+    <update id="updateProfileImage" parameterType="com.aplus.aplusmarket.dto.auth.requset.ProfileUpdateRequestDTO">
+        UPDATE tb_user SET profile_img = #{profileImg}
+        WHERE id=#{id}
+    </update>
+
+    <select id="userIsExist" parameterType="Long" resultType="Boolean">
+        SELECT COUNT(*) > 0 FROM tb_user WHERE id = #{id}
+    </select>
+
+    <update id="updateUserWithdrawal" parameterType="com.aplus.aplusmarket.entity.User" >
+        UPDATE tb_user SET deleted_at = #{deletedAt} , status=#{status}
+        WHERE id=#{id}
+    </update>
+
 </mapper>

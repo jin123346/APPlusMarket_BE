@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aplus.aplusmarket.mapper.auth.AddressBookMapper">
+    <select id="findByUserId" parameterType="Long" resultType="com.aplus.aplusmarket.entity.AddressBook">
+        SELECT *  FROM tb_addressBook WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertAddress" parameterType="com.aplus.aplusmarket.entity.AddressBook" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_addressBook(user_id,is_default,title,postcode,address1,address2,message,receiver_name,receiver_phone)
+        values (#{userId},#{isDefault},#{title},#{postcode},#{address1},#{address2},#{message},#{receiverName}, #{receiverPhone});
+
+    </insert>
+
+    <update id="updateAddressIsDefault" parameterType="Long" >
+        UPDATE tb_addressBook
+        SET is_default = 0
+        WHERE user_id = #{userId}
+    </update>
+    <update id="updateAddressForModify" parameterType="com.aplus.aplusmarket.entity.AddressBook" >
+        UPDATE tb_addressBook
+        <set>
+            <if test="isDefault != null">is_default = #{isDefault}</if>
+            <if test="title != null">, title = #{title}</if>
+            <if test="postcode != null">, postcode = #{postcode}</if>
+            <if test="address1 != null">, address1 = #{address1}</if>
+            <if test="address2 != null">, address2 = #{address2}</if>
+            <if test="message != null">, message = #{message}</if>
+            <if test="receiverName != null">, receiver_name = #{receiverName}</if>
+            <if test="receiverPhone != null">, receiver_phone = #{receiverPhone}</if>
+
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteAddressById" parameterType="Long">
+        DELETE FROM tb_addressBook where id= #{id}
+    </delete>
+
+    <select id="addressIsExist" parameterType="Long" resultType="Long">
+        SELECT user_id FROM tb_addressBook WHERE id = #{id}
+    </select>
+
+
+</mapper>
