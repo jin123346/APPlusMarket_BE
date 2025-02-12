@@ -9,7 +9,7 @@ spring:
     datasource:
         url: jdbc:mysql://localhost:3306/applusmarket?serverTimezone=Asia/Seoul
         username: root
-        password: 1234
+        password: asd1234
         driver-class-name: com.mysql.cj.jdbc.Driver
         mybatis:
             mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
