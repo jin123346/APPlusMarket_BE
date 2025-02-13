@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
@@ -30,7 +33,9 @@ public class CrawlerController {
 
     @GetMapping("/samsung/search")
     public ResponseEntity searchSamsung(@RequestParam String keyword){
-        ResponseDTO responseDTO =  samsungCrawlerService.searchProductByKeyWord(keyword); // 검색 개수 최대 10개
+        String decodedKeyword = URLDecoder.decode(keyword, StandardCharsets.UTF_8);
+        System.out.println("디코딩된 검색어: " + decodedKeyword);
+        ResponseDTO responseDTO =  samsungCrawlerService.searchProductByKeyWord(decodedKeyword); // 검색 개수 최대 10개
 
         if(responseDTO instanceof DataResponseDTO<?>){
             return ResponseEntity.ok().body((DataResponseDTO)responseDTO);

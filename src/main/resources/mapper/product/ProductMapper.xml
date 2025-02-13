@@ -76,7 +76,7 @@
             img.uuid_name AS product_image
         FROM tb_product p
                  LEFT JOIN tb_product_image img
-                           ON p.id = img.product_id AND img.image_index = 0
+                           ON p.id = img.product_id AND img.sequence = 0
         ORDER BY p.updated_at DESC
             LIMIT #{pageSize} OFFSET #{offset}
     </select>
