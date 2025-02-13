@@ -4,8 +4,8 @@
 
     <!-- INSERT 상품 이미지 등록 -->
     <insert id="InsertProductImage" parameterType="com.aplus.aplusmarket.entity.Product_Images">
-        INSERT INTO tb_product_image (product_id, original_name, uuid_name,image_index)
-        VALUES (#{productId}, #{originalName}, #{uuidName},#{imageIndex})
+        INSERT INTO tb_product_image (product_id, original_name, uuid_name,sequence)
+        VALUES (#{productId}, #{originalName}, #{uuidName},#{sequence})
     </insert>
 
     <!-- SELECT BY ID 상품 이미지 선택-->

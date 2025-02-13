@@ -151,16 +151,15 @@ public class SamsungCrawlerService {
 
     public ResponseDTO searchProductByKeyWord(String keyword){
 
+        log.info("검색단어 : {}",keyword);
         try{
             Query query = new Query();
-
             // name, productCode, productDetailCode 필드에 keyword 포함된 데이터 검색
             query.addCriteria(new Criteria().orOperator(
-                    Criteria.where("name").regex(keyword, "i"),
-                    Criteria.where("productCode").regex(keyword, "i"),
-                    Criteria.where("productDetailCode").regex(keyword, "i")
+                    Criteria.where("name").regex(".*" + keyword + ".*"),
+                    Criteria.where("productCode").regex(".*" + keyword + ".*"),
+                    Criteria.where("productDetailCode").regex(".*" + keyword + ".*")
             ));
-
             List<Products> products = mongoTemplate.find(query, Products.class);
             log.info("검색 결과 : {} 개", products.size());
 

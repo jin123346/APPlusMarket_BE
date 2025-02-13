@@ -41,7 +41,7 @@ public interface ChatRoomMapper {
     WHERE
         (room.seller_id = #{currentUserId} OR mapping.user_id = #{currentUserId})
         AND mapping.deleted_at IS NULL
-    	AND pi.image_index = 0;
+    	AND pi.sequence = 0;
     
 
     """)
@@ -77,7 +77,7 @@ public interface ChatRoomMapper {
           ) rm ON c.id = rm.chat_room_id
           WHERE c.id = 1
           AND u.id = rm.user_id
-          AND tpi.image_index =0
+          AND tpi.sequence =0
           ORDER BY rm.created_at ASC
 """)
     List<ChatRoomSQLResultDTO> selectChatRoomDetailsById(@Param("chatRoomId") int chatRoomId);

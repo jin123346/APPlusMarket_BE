@@ -1,5 +1,6 @@
 package com.aplus.aplusmarket.dto.product.response;
 
+import com.aplus.aplusmarket.dto.product.FindProduct;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import lombok.*;
 
@@ -31,4 +32,5 @@ public class ProductDTO { // 상품 상세 정보 출력 데이터
     private Boolean isPossibleMeetYou;
     private String category;
     private List<Product_ImagesDTO> images;
+    private FindProduct findProduct;
 }

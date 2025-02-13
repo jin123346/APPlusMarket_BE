@@ -73,7 +73,7 @@ public class ProductService {
                     productImages.setProductId(product.getId());
                     productImages.setOriginalName(originalName);
                     productImages.setUuidName(uuidName);
-                    productImages.setImageIndex(index);
+                    productImages.setSequence(index);
                     productImageMapper.InsertProductImage(productImages);
                     //index 값을 증가 시켜 몆번째 사진인지를 구분 지어 줍니다.
                     index++;
@@ -104,7 +104,7 @@ public class ProductService {
                             image.getProductId(),
                             image.getOriginalName(),
                             image.getUuidName(),
-                            image.getImageIndex()
+                            image.getSequence()
                     ))
                     .collect(Collectors.toList());
 
