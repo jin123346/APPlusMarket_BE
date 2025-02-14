@@ -11,7 +11,7 @@ import lombok.*;
 public class ChatRoomCardResponseDTO {
 
     private int chatRoomId;
-
+    private int unRead = 10;
     private String productThumbnail;
     private int productId;
     private int sellerId;// 채팅방의 제품 판매자
