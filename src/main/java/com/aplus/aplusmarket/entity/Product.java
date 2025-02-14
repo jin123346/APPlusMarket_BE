@@ -28,6 +28,7 @@ public class Product {
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
+    private String brand;
     private int sequence;
     private String findProductId;
 }

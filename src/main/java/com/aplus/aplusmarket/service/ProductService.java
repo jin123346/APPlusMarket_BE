@@ -3,6 +3,7 @@ package com.aplus.aplusmarket.service;
 import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
@@ -162,6 +163,27 @@ public class ProductService {
             return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
         }
     }
+
+
+    //나의 현재 판매중인 상품 조회
+    public ResponseDTO selectProductByIdForSelling(ProductListRequestDTO productListRequestDTO){
+        try{
+            List<ProductResponseCard> products
+                    = productMapper.selectProductByIdForSelling(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId());
+            log.info(products);
+            if(products == null || products.isEmpty()){
+                return ResponseDTO.of("success", 2006,"판매중인 상품이 없습니다.");
+            }
+
+            List<ProductResponseCardDTO> productList = products.stream().map(this::toDTO).toList();
+            return DataResponseDTO.of(productList,2007,"판매중인 상품 조회 성공");
+
+        }catch (Exception e){
+            log.error("상품 목록 조회 실패", e);
+            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+        }
+    }
+
     // DTO -> Entity 변환
     private Product toEntity(ProductRequestDTO productRequestDTO) {
         return Product.builder()
@@ -181,6 +203,8 @@ public class ProductService {
                 .isNegotiable(productRequestDTO.getIsNegotiable())
                 .isPossibleMeetYou(productRequestDTO.getIsPossibleMeetYou())
                 .category(productRequestDTO.getCategory())
+                .brand(productRequestDTO.getBrand())
+                .findProductId(productRequestDTO.getFindProductId())
                 .build();
     }
 
@@ -208,20 +232,22 @@ public class ProductService {
     }
 
     //상품 리스트 화면 출력 에서 데이터 변경
-    private ProductResponseCardDTO toDTO(ProductResponseCard dto) {
+    private ProductResponseCardDTO toDTO(ProductResponseCard entity) {
         return ProductResponseCardDTO.builder()
-                .id(dto.getId())
-                .title(dto.getTitle())
-                .productName(dto.getProductName())
-                .createdAt(dto.getCreatedAt())
-                .updatedAt(dto.getUpdatedAt())
-                .price(dto.getPrice())
-                .status(dto.getStatus())
-                .sellerId(dto.getSellerId())
-                .isNegotiable(dto.getIsNegotiable())
-                .isPossibleMeetYou(dto.getIsPossibleMeetYou())
-                .category(dto.getCategory())
-                .productImage(dto.getProductImage()) // 이미지 필드 추가
+                .id(entity.getId())
+                .title(entity.getTitle())
+                .productName(entity.getProductName())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .price(entity.getPrice())
+                .status(entity.getStatus())
+                .sellerId(entity.getSellerId())
+                .isNegotiable(entity.getIsNegotiable())
+                .isPossibleMeetYou(entity.getIsPossibleMeetYou())
+                .category(entity.getCategory())
+                .productImage(entity.getProductImage()) // 이미지 필드 추가
+                .registerLocation(entity.getRegisterLocation())
+                .uuidName(entity.getUuidName())
                 .build();
     }
 }

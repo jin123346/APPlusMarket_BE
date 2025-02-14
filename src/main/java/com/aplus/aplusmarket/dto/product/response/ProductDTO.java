@@ -31,6 +31,8 @@ public class ProductDTO { // 상품 상세 정보 출력 데이터
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
+    private String brand;
     private List<Product_ImagesDTO> images;
     private FindProduct findProduct;
+    private String location;
 }

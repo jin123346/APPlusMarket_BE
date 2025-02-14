@@ -6,17 +6,49 @@
     <insert id="InsertProduct" parameterType="com.aplus.aplusmarket.entity.Product" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_product (title, product_name, content, register_location, register_ip,
                              created_at, updated_at, reload_at, price, status,  seller_id,
-                             is_negotiable, is_possible_meet_you, category)
+                             is_negotiable, is_possible_meet_you, category,brand,findProductId)
         VALUES (#{title}, #{productName}, #{content}, #{registerLocation}, #{registerIp},
-                NOW(), NOW(), NOW(), #{price}, 'Active', #{sellerId},
-                #{isNegotiable}, #{isPossibleMeetYou}, #{category})
+                NOW(), NOW(), NOW(), #{price}, 'Active', #{sellerId},#{isNegotiable}, #{isPossibleMeetYou}, #{category},#{brand},#{findProductId})
     </insert>
 
     <!-- SELECT BY ID 상품 아이디를 통해 상품 상세 정보와 판매자 닉네임을 가지고 옵니다-->
     <select id="SelectProductById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product">
         <!-- SELECT * FROM tb_product WHERE id = #{id} -->
-        SELECT p.*, u.nickname FROM tb_product AS p LEFT JOIN tb_user u ON p.seller_id = u.id WHERE p.id = #{id}
+        SELECT p.*, u.nickname FROM tb_product AS p
+            LEFT JOIN tb_user u ON p.seller_id = u.id
+             WHERE p.id = #{id}
+
     </select>
+
+    <!--판매중 상품인 상품을 조회하기 -->
+    <select id="selectProductByIdForSelling" parameterType="com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO" resultType="com.aplus.aplusmarket.entity.ProductResponseCard">
+        SELECT
+        p.id,
+        p.title,
+        p.product_name,
+        p.created_at,
+        p.updated_at,
+        p.price,
+        p.status,
+        p.seller_id,
+        p.is_negotiable,
+        p.is_possible_meet_you,
+        p.category,
+        p.register_location,
+        p.brand
+        img.uuid_name
+            FROM tb_product AS p
+            LEFT JOIN tb_product_image img
+            ON p.id = img.product_id AND img.sequence = 0
+        where seller_id = #{userId} AND status = 'Active'
+        <if test="lastIndex != null and lastIndex != '' and lastIndex != 0">
+          And p.id &lt; #{lastIndex}
+--             <![CDATA[ AND p.id < #{lastIndex} ]]>
+        </if>
+        ORDER BY p.created_at desc
+        Limit 10
+    </select>
+
 
     <!-- SELECT ALL 상품 정보 모두를 가지고 옵니다-->
     <select id="SelectAllProducts" resultType="com.aplus.aplusmarket.entity.Product">

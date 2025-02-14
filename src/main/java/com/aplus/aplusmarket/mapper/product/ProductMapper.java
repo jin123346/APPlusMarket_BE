@@ -13,5 +13,7 @@ public interface ProductMapper {
     boolean UpdateProduct(Product product);
     boolean DeleteProduct(Long id);
     List<ProductResponseCard> SelectProductsPage(@Param("pageSize") int pageSize, @Param("offset") int offset);
+    List<ProductResponseCard> selectProductByIdForSelling(@Param("lastIndex") long lastIndex ,@Param("userId") long userId );
+
 }
 

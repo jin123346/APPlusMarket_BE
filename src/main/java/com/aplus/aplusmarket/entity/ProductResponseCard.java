@@ -23,4 +23,7 @@ public class ProductResponseCard {
     private Boolean isPossibleMeetYou;
     private String category;
     private Long sellerId;
+    private String registerLocation;
+    private String uuidName;
+    private String brand;
 }

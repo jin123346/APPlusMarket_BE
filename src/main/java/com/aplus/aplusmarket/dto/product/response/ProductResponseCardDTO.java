@@ -25,4 +25,8 @@ public class ProductResponseCardDTO { //상품 리스트 화면 출력 화면
     private Boolean isPossibleMeetYou;
     private String category;
     private Long sellerId;
+    private String registerLocation;
+    private String uuidName;
+    private String brand;
+
 }

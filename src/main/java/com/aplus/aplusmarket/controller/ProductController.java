@@ -1,6 +1,7 @@
 package com.aplus.aplusmarket.controller;
 
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.entity.Product;
@@ -66,5 +67,10 @@ public class ProductController {
     public boolean updateProduct(@RequestBody ProductRequestDTO productRequestDTO){
         boolean check = productService.updateProduct(productRequestDTO);
         return check;
+    }
+
+    @GetMapping("/on-sale")
+    public ResponseEntity selectProductForSelling(@RequestBody ProductListRequestDTO productListRequestDTO){
+        return ResponseEntity.ok().body(productService.selectProductByIdForSelling(productListRequestDTO));
     }
 }
