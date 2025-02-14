@@ -14,9 +14,12 @@ import java.util.List;
 public class ChatRoomDetailDTO {
 
     private int chatRoomId;
+
     private ProductCardDTO productCard;
     private List<UserCardDTO> participants;
-    private List<ChatMessageDTO> messages; // TODO : Message - Pagination
+    private List<ChatMessageDTO> messages;
+
+
     }
 
 
