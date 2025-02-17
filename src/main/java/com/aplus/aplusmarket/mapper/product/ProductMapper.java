@@ -9,11 +9,14 @@ import java.util.List;
 public interface ProductMapper {
     boolean InsertProduct(Product product);
     Product SelectProductById(Long id);
+    Product SelectProductByIdForModify(Long id);
     List<Product> SelectAllProducts();
     boolean UpdateProduct(Product product);
     boolean DeleteProduct(Long id);
     List<ProductResponseCard> SelectProductsPage(@Param("pageSize") int pageSize, @Param("offset") int offset);
-    List<ProductResponseCard> selectProductByIdForSelling(@Param("lastIndex") long lastIndex ,@Param("userId") long userId );
-
+    List<ProductResponseCard> selectProductByIdForStatus(@Param("lastIndex") long lastIndex ,@Param("userId") long userId,@Param("status") String status );
+    List<ProductResponseCard> selectProductByIdForCompleted(@Param("lastIndex") long lastIndex ,@Param("userId") long userId,@Param("status") String status );
+    int updateReload(Long id);
+    int updateStatus(@Param("id") Long id,@Param("status")  String status);
 }
 

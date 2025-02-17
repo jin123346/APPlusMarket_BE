@@ -73,4 +73,29 @@ public class ProductController {
     public ResponseEntity selectProductForSelling(@RequestBody ProductListRequestDTO productListRequestDTO){
         return ResponseEntity.ok().body(productService.selectProductByIdForSelling(productListRequestDTO));
     }
+
+    @GetMapping("/completed")
+    public ResponseEntity selectProductForCompleted(@RequestBody ProductListRequestDTO productListRequestDTO){
+        return ResponseEntity.ok().body(productService.selectProductByIdForCompleted(productListRequestDTO));
+    }
+
+    @PutMapping("/reload/{productId}")
+    public ResponseEntity reloadProduct(@PathVariable(value = "productId") Long productId){
+        return ResponseEntity.ok().body(productService.reloadProduct(productId));
+    }
+
+    @PutMapping("/{productId}/{status}")
+    public ResponseEntity reloadProduct(
+            @PathVariable(value = "productId") Long productId,
+            @PathVariable(value = "status") String status){
+        return ResponseEntity.ok().body(productService.updateStatus(productId,status));
+    }
+
+    @GetMapping("/modify/{productId}/{userId}")
+    public ResponseEntity modifyProduct(
+            @PathVariable(value = "productId") Long productId,
+            @PathVariable(value = "userId") Long userId
+            ){
+        return ResponseEntity.ok().body(productService.selectProductForModify(productId,userId));
+    }
 }

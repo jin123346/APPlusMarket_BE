@@ -19,6 +19,7 @@ public class ProductResponseCardDTO { //상품 리스트 화면 출력 화면
     private String productName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime reloadAt;
     private Integer price;
     private String status;
     private Boolean isNegotiable;
@@ -28,5 +29,7 @@ public class ProductResponseCardDTO { //상품 리스트 화면 출력 화면
     private String registerLocation;
     private String uuidName;
     private String brand;
+    private Long buyerId;
+
 
 }

@@ -9,4 +9,7 @@ public class ProductListRequestDTO {
     private Long userId;
     private long lastIndex;
     private long pageSize;
+    private String status;
+    private Long id;
+
 }

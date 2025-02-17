@@ -17,6 +17,7 @@ public class ProductResponseCard {
     private String productName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime reloadAt;
     private Integer price;
     private String status;
     private Boolean isNegotiable;
@@ -26,4 +27,5 @@ public class ProductResponseCard {
     private String registerLocation;
     private String uuidName;
     private String brand;
+    private Long buyerId;
 }
