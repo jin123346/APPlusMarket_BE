@@ -1,6 +1,7 @@
 package com.aplus.aplusmarket.dto.product;
 
 import com.aplus.aplusmarket.document.Products;
+
 import com.aplus.aplusmarket.entity.Brand;
 import com.aplus.aplusmarket.entity.Category;
 import lombok.*;
@@ -40,4 +41,5 @@ public class FindProduct {
                 .productDetailCode(products.getProductDetailCode())
                 .build();
     }
+
 }

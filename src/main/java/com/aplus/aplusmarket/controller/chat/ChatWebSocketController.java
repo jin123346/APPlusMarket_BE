@@ -26,8 +26,10 @@ public class ChatWebSocketController {
     @Transactional
     @MessageMapping("/chat/message")
     public ResponseDTO sendMessage(ChatMessageDTO chatMessage) {
+
         ChatMessageDTO resultDTO = chatService.insertMessage(chatMessage);
         log.info("resultDTO "+resultDTO);
+
         messagingTemplate.convertAndSend("/sub/chatroom/" + resultDTO.getChatRoomId(), resultDTO);
         return ResponseDTO.of("success", 4000, "Message broadcasted successfully");
     }
