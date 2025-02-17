@@ -1,8 +1,11 @@
 package com.aplus.aplusmarket.service;
 
+import com.aplus.aplusmarket.document.Products;
 import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.product.FindProduct;
+import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
@@ -12,6 +15,7 @@ import com.aplus.aplusmarket.entity.ProductResponseCard;
 import com.aplus.aplusmarket.entity.Product_Images;
 import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
+import com.aplus.aplusmarket.repository.ProductsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 /*
 * 2024.02.04 이도영 상품 페이징 처리 기능 수정
@@ -33,6 +36,7 @@ public class ProductService {
 
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
+    private final ProductsRepository productsRepository;
     //파일 업로드 경로
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
@@ -95,18 +99,34 @@ public class ProductService {
             Product product = productMapper.SelectProductById(Long.parseLong(id));
             log.info("product : "+product);
             ProductDTO productDTO = toDTO(product);
+
+            if(product == null){
+                return ErrorResponseDTO.of(2004,"상품을 찾을 수 없습니다.");
+            }
+            log.info("🔥 [DEBUG] 조회된 상품 ID: {}", product.getId());
+
+
             // 상품 번호를 입력받아 등록되어 있는 상품 이미지를 리스트 형식으로 가지고 옵니다
             List<Product_Images> productImages = productImageMapper.SelectProductImageByProductId(product.getId());
             // Product_Images -> Product_ImagesDTO 변환
-            List<Product_ImagesDTO> imageDTOs = productImages.stream()
-                    .map(image -> new Product_ImagesDTO(
-                            image.getId(),
-                            image.getProductId(),
-                            image.getOriginalName(),
-                            image.getUuidName(),
-                            image.getSequence()
-                    ))
-                    .collect(Collectors.toList());
+            log.info(" 몇개의 productImage?? : {}",productImages);
+
+            if (productImages == null) {
+                log.warn("⚠️ [WARNING] 상품 이미지가 없습니다. 빈 리스트로 대체합니다.");
+                productImages = new ArrayList<>();
+            }
+            log.info(" 몇개의 productImage?? : {}",productImages);
+                 List<Product_ImagesDTO> imageDTOs = new ArrayList<>();
+                for(Product_Images image : productImages){
+                 Product_ImagesDTO dto= new Product_ImagesDTO(
+                                    image.getId(),
+                                    image.getProductId(),
+                                    image.getOriginalName(),
+                                    image.getUuidName(),
+                                    image.getSequence()
+                            );
+                 imageDTOs.add(dto);
+                }
 
             // DTO에 이미지 리스트 추가
             productDTO.setImages(imageDTOs);
@@ -162,6 +182,137 @@ public class ProductService {
             return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
         }
     }
+
+
+    //나의 현재 판매중인 상품 조회
+    public ResponseDTO selectProductByIdForSelling(ProductListRequestDTO productListRequestDTO){
+        try{
+            List<ProductResponseCard> products
+                    = productMapper.selectProductByIdForStatus(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId(),productListRequestDTO.getStatus());
+            log.info(products);
+            if(products == null || products.isEmpty()){
+                return ResponseDTO.of("success", 2006,"판매중인 상품이 없습니다.");
+            }
+
+
+
+            List<ProductResponseCardDTO> productList = products.stream().map(this::toDTO).toList();
+            return DataResponseDTO.of(productList,2007,"판매중인 상품 조회 성공");
+
+        }catch (Exception e){
+            log.error("상품 목록 조회 실패", e);
+            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+        }
+    }
+
+    //나의 구매완료된 상품 조회
+    public ResponseDTO selectProductByIdForCompleted(ProductListRequestDTO productListRequestDTO){
+        try{
+            List<ProductResponseCard> products
+                    = productMapper.selectProductByIdForCompleted(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId(),"Sold");
+            log.info(products);
+            if(products == null || products.isEmpty()){
+                return ResponseDTO.of("success", 2006,"구매완료 및 판매완료 상품이 없습니다.");
+            }
+
+            List<ProductResponseCardDTO> productList = products.stream().map(this::toDTO).toList();
+            return DataResponseDTO.of(productList,2007,"구매완료 및 판매완료 상품 조회 성공");
+
+        }catch (Exception e){
+            log.error("상품 목록 조회 실패", e);
+            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+        }
+    }
+
+    //끌어올리기,
+    public ResponseDTO reloadProduct(Long productId){
+        try {
+            int result = productMapper.updateReload(productId);
+
+            if(result != 1 ){
+                return ErrorResponseDTO.of(2010,"끌어올리기 실패");
+            }
+            return ResponseDTO.of("Success",2008,"끌어올리기 성공");
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+           return ErrorResponseDTO.of(2010,"끌어올리기 실패");
+
+        }
+    }
+
+    // => reload 업데이트 ,
+
+    //후기보기
+
+    // 후기 작성하기
+
+    //숨김처리 // 숨김해제
+    public ResponseDTO updateStatus(Long productId,String status){
+        try {
+            int result = productMapper.updateStatus(productId,status);
+
+            if(result != 1 ){
+                return ErrorResponseDTO.of(2010,status +"실패");
+            }
+            return ResponseDTO.of("Success",2008,"끌어올리기 성공");
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ErrorResponseDTO.of(2010,status +"실패");
+
+        }
+    }
+
+
+    public ResponseDTO selectProductForModify(Long productId,Long userId){
+        try {
+
+            Product product = productMapper.SelectProductByIdForModify(productId);
+
+            if(product.getSellerId() != userId){
+                return ErrorResponseDTO.of(2020,"권한이 없습니다.");
+            }
+
+            ProductDTO productDTO = toDTO(product);
+            if(product.getFindProductId() != null){
+               Optional<Products> opt = productsRepository.findById(product.getFindProductId());
+               if(opt.isPresent()){
+                   FindProduct findProduct  = FindProduct.toDTO(opt.get());
+                   productDTO.setFindProduct(findProduct);
+               }
+            }
+          List<Product_Images> images =productImageMapper.SelectProductImageByProductId(product.getId());
+            List<Product_ImagesDTO> imageDTOs = new ArrayList<>();
+            for(Product_Images image : images){
+                Product_ImagesDTO dto= new Product_ImagesDTO(
+                        image.getId(),
+                        image.getProductId(),
+                        image.getOriginalName(),
+                        image.getUuidName(),
+                        image.getSequence()
+                );
+                imageDTOs.add(dto);
+            }
+            // DTO에 이미지 리스트 추가
+            productDTO.setImages(imageDTOs);
+
+            return DataResponseDTO.of(productDTO,2022,"성공");
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ErrorResponseDTO.of(2020,"업데이트 실패");
+
+        }
+    }
+
+
+
+
+
+
+
+
     // DTO -> Entity 변환
     private Product toEntity(ProductRequestDTO productRequestDTO) {
         return Product.builder()
@@ -181,6 +332,8 @@ public class ProductService {
                 .isNegotiable(productRequestDTO.getIsNegotiable())
                 .isPossibleMeetYou(productRequestDTO.getIsPossibleMeetYou())
                 .category(productRequestDTO.getCategory())
+                .brand(productRequestDTO.getBrand())
+                .findProductId(productRequestDTO.getFindProductId())
                 .build();
     }
 
@@ -204,24 +357,31 @@ public class ProductService {
                 .isNegotiable(product.getIsNegotiable())
                 .isPossibleMeetYou(product.getIsPossibleMeetYou())
                 .category(product.getCategory())
+                .brand(product.getBrand())
+                .buyerId(product.getBuyerId())
+                .ProductImages(product.getImages().stream().map(Product_ImagesDTO::toDTO).toList())
                 .build();
     }
 
     //상품 리스트 화면 출력 에서 데이터 변경
-    private ProductResponseCardDTO toDTO(ProductResponseCard dto) {
+    private ProductResponseCardDTO toDTO(ProductResponseCard entity) {
         return ProductResponseCardDTO.builder()
-                .id(dto.getId())
-                .title(dto.getTitle())
-                .productName(dto.getProductName())
-                .createdAt(dto.getCreatedAt())
-                .updatedAt(dto.getUpdatedAt())
-                .price(dto.getPrice())
-                .status(dto.getStatus())
-                .sellerId(dto.getSellerId())
-                .isNegotiable(dto.getIsNegotiable())
-                .isPossibleMeetYou(dto.getIsPossibleMeetYou())
-                .category(dto.getCategory())
-                .productImage(dto.getProductImage()) // 이미지 필드 추가
+                .id(entity.getId())
+                .title(entity.getTitle())
+                .productName(entity.getProductName())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .reloadAt(entity.getReloadAt())
+                .price(entity.getPrice())
+                .status(entity.getStatus())
+                .sellerId(entity.getSellerId())
+                .isNegotiable(entity.getIsNegotiable())
+                .isPossibleMeetYou(entity.getIsPossibleMeetYou())
+                .category(entity.getCategory())
+                .productImage(entity.getProductImage()) // 이미지 필드 추가
+                .registerLocation(entity.getRegisterLocation())
+                .uuidName(entity.getUuidName())
+                .buyerId(entity.getBuyerId())
                 .build();
     }
 }

@@ -3,7 +3,7 @@ package com.aplus.aplusmarket.entity;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
+import java.util.*;
 @Getter
 @Setter
 @ToString
@@ -28,6 +28,12 @@ public class Product {
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
+    private String brand;
+    private int sequence;
+    private String findProductId;
+    private Long buyerId;
+    private List<Product_Images> images = new ArrayList<>();
+
     private int sequence;
     private String findProductId;
 }

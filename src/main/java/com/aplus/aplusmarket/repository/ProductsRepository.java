@@ -9,4 +9,5 @@ import java.util.*;
 @Repository
 public interface ProductsRepository extends MongoRepository<Products,String> {
     List<Products> findAll();
+    Optional<Products> findById(String id );
 }

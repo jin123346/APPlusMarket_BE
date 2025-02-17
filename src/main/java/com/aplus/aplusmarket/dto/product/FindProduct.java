@@ -1,5 +1,7 @@
 package com.aplus.aplusmarket.dto.product;
 
+import com.aplus.aplusmarket.document.Products;
+
 import com.aplus.aplusmarket.entity.Brand;
 import com.aplus.aplusmarket.entity.Category;
 import lombok.*;
@@ -23,4 +25,21 @@ public class FindProduct {
     private double originalPrice;
     private double finalPrice;
     private String productUrl;
+    private String brandName;
+    private String categoryName;
+
+    public static FindProduct toDTO(Products products){
+        return FindProduct.builder()
+                .id(products.getId())
+                .brandName(products.getBrand() == null  ? null : products.getBrand().getName())
+                .categoryName(products.getCategory() == null ? null : products.getCategory().getCategoryName())
+                .finalPrice(products.getFinalPrice())
+                .originalPrice(products.getOriginalPrice())
+                .productUrl(products.getProductUrl())
+                .name(products.getName())
+                .productCode(products.getProductCode())
+                .productDetailCode(products.getProductDetailCode())
+                .build();
+    }
+
 }

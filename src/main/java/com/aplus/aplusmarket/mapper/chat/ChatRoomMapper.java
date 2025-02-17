@@ -23,6 +23,7 @@ public interface ChatRoomMapper {
     int insertMessage(ChatMessageDTO chatMessageCreateDTO);
 
     @Select("""
+
         SELECT chat_room_id 
         FROM tb_chat_room cr
         JOIN tb_chat_mapping cm ON cr.id = cm.chat_room_id 
@@ -72,7 +73,6 @@ public interface ChatRoomMapper {
             AND mapping.deleted_at IS NULL
             AND pi.sequence = 0;
         
-
     """)
     List<ChatRoomCardResponseDTO> selectChatRoomsByUserId(@Param("currentUserId") int currentUserId);
 
@@ -83,6 +83,7 @@ public interface ChatRoomMapper {
      */
     @Select("""
         SELECT
+
             c.id AS chatRoomId,
             tpi.uuid_name AS productThumbnail,
             p.product_name AS productName,

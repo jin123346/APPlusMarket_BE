@@ -27,4 +27,6 @@ public class ProductRequestDTO { // 상품 상세 정보 등록 데이터
     private Boolean isNegotiable;
     private Boolean isPossibleMeetYou;
     private String category;
+    private String brand;
+    private String findProductId;
 }
