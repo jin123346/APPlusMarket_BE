@@ -5,7 +5,9 @@ import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.FindProduct;
+import com.aplus.aplusmarket.dto.product.requests.ImageItemDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductModifyRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
@@ -16,14 +18,17 @@ import com.aplus.aplusmarket.entity.Product_Images;
 import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import com.aplus.aplusmarket.repository.ProductsRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 /*
@@ -37,6 +42,8 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
     private final ProductsRepository productsRepository;
+    private final FileService fileService;
+    private final ObjectMapper objectMapper;
     //파일 업로드 경로
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
@@ -146,12 +153,7 @@ public class ProductService {
         return products;
     }
 
-    // 상품 업데이트 (아직 기능 구현 하지 않았습니다.)
-    public boolean updateProduct(ProductRequestDTO productDTO) {
-        Product product = toEntity(productDTO); // DTO -> Entity 변환
-        boolean result = productMapper.UpdateProduct(product); // Update 실행
-        return result; // 성공 시 DTO 반환
-    }
+
 
     // 상품 삭제 기능(현재 상품에 대한 데이터를 삭제하는 식으로 되어 있습니다. 해당 기능은 조금 수정 해야 할것으로 보입니다.)
     public boolean deleteProductById(String id) {
@@ -270,6 +272,7 @@ public class ProductService {
 
             Product product = productMapper.SelectProductByIdForModify(productId);
 
+            log.info("수정할 product : {}",product);
             if(product.getSellerId() != userId){
                 return ErrorResponseDTO.of(2020,"권한이 없습니다.");
             }
@@ -306,6 +309,127 @@ public class ProductService {
         }
     }
 
+
+    //상품 업데이트 (수정)
+
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseDTO updateProduct(ProductModifyRequestDTO requestDTO){
+        try{
+            String path= USER_DIR+"/"+uploadPath+"/"+requestDTO.getId().toString();
+
+            //삭제 먼저,
+            if (requestDTO.getRemovedImages() != null) {
+
+                for(long id : requestDTO.getRemovedImages()){
+                    Product_Images deletedImage =productImageMapper.SelectProductImageById(id);
+                    fileService.deleteFile(deletedImage.getUuidName(),path);
+                     productImageMapper.deleteById(id);
+                }
+
+            }
+            //기존 이미지 순서 업데이트,
+
+            int length = 0;
+            if (requestDTO.getExistingImages() != null) {
+                for (ImageItemDTO img : requestDTO.getExistingImages()) {
+                    productImageMapper.updateSequence(Long.valueOf(img.getId()), length);
+                    length ++;
+                }
+            }
+
+            //새로운 이미지 업로드
+
+            // 새로운 이미지 업로드 및 저장
+            if (requestDTO.getNewImages() != null) {
+                for (MultipartFile file : requestDTO.getNewImages()) {
+                    Product_Images productImages = fileService.uploadProductImage(file,path,requestDTO.getId());
+                    if(productImages != null){
+                        //에러처리
+                        throw new RuntimeException(" productImages가 null, 업로드 실패!");
+
+                    }
+                    productImages.setSequence(length);
+                    productImageMapper.InsertProductImage(productImages);
+                    length++;
+                }
+            }
+            //DB 데이터 갱신
+
+
+            //제품 정보 업데이트
+            Product product = Product.builder()
+                    .id(requestDTO.getId())
+                    .findProductId(requestDTO.getFindProduct())
+                    .brand(requestDTO.getBrand())
+                    .category(requestDTO.getCategory())
+                    .productName(requestDTO.getProductName())
+                    .content(requestDTO.getContent())
+                    .title(requestDTO.getTitle())
+                    .isNegotiable(requestDTO.getIsNegotiable())
+                    .updatedAt(LocalDateTime.now())
+                    .isPossibleMeetYou(requestDTO.getIsPossibleMeetYou())
+                    .price(requestDTO.getPrice())
+                    .registerIp(requestDTO.getRegisterIp())
+                    .build();
+
+
+            boolean result = productMapper.updateProduct(product);
+
+            if (!result) {
+                throw new RuntimeException(" 제품 업데이트 실패!");
+            }
+            return ResponseDTO.of("success", 2036,"제품 수정완료");
+
+
+        }catch (Exception e){
+            return ErrorResponseDTO.of(2030,"에러 발생");
+        }
+
+    }
+
+
+
+    public void fileUpload(List<MultipartFile> images , String dirPath, long id,int index){
+        try{
+            File productFolder = new File(dirPath);
+            //경로가 없을경우 폴더를 생성 하는데 기본적으로는 그냥 생성 한다고 보면 됩니다.
+            if (!productFolder.exists()) {
+                productFolder.mkdirs();
+            }
+            if (images != null) {
+                for (MultipartFile file : images) {
+                    // 원본 파일명에서 확장자 추출
+                    String originalName = file.getOriginalFilename();
+                    String extension = "";
+                    if (originalName != null && originalName.contains(".")) {
+                        extension = originalName.substring(originalName.lastIndexOf("."));
+                    }
+                    // UUID 파일명 생성
+                    String uuidName = UUID.randomUUID().toString() + extension;
+                    // 최종 저장 경로
+                    File dest = new File(productFolder,uuidName);
+                    // 파일 저장 (disk write)
+                    file.transferTo(dest);
+
+                    // 상품 이미지에 포함 해야 하는 정보들을 저장 합니다.
+                    Product_Images productImages = new Product_Images();
+                    productImages.setProductId(id);
+                    productImages.setOriginalName(originalName);
+                    productImages.setUuidName(uuidName);
+                    productImages.setSequence(index);
+                    productImageMapper.InsertProductImage(productImages);
+                    //index 값을 증가 시켜 몆번째 사진인지를 구분 지어 줍니다.
+                    index++;
+                }
+            }else {
+                throw new Exception("Image가 들어오지 않음!");
+            }
+        }catch (Exception e){
+
+        }
+
+
+    }
 
 
 
