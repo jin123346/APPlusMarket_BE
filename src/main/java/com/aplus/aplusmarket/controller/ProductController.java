@@ -1,6 +1,7 @@
 package com.aplus.aplusmarket.controller;
 
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.entity.Product;
@@ -66,5 +67,35 @@ public class ProductController {
     public boolean updateProduct(@RequestBody ProductRequestDTO productRequestDTO){
         boolean check = productService.updateProduct(productRequestDTO);
         return check;
+    }
+
+    @GetMapping("/on-sale")
+    public ResponseEntity selectProductForSelling(@RequestBody ProductListRequestDTO productListRequestDTO){
+        return ResponseEntity.ok().body(productService.selectProductByIdForSelling(productListRequestDTO));
+    }
+
+    @GetMapping("/completed")
+    public ResponseEntity selectProductForCompleted(@RequestBody ProductListRequestDTO productListRequestDTO){
+        return ResponseEntity.ok().body(productService.selectProductByIdForCompleted(productListRequestDTO));
+    }
+
+    @PutMapping("/reload/{productId}")
+    public ResponseEntity reloadProduct(@PathVariable(value = "productId") Long productId){
+        return ResponseEntity.ok().body(productService.reloadProduct(productId));
+    }
+
+    @PutMapping("/{productId}/{status}")
+    public ResponseEntity reloadProduct(
+            @PathVariable(value = "productId") Long productId,
+            @PathVariable(value = "status") String status){
+        return ResponseEntity.ok().body(productService.updateStatus(productId,status));
+    }
+
+    @GetMapping("/modify/{productId}/{userId}")
+    public ResponseEntity modifyProduct(
+            @PathVariable(value = "productId") Long productId,
+            @PathVariable(value = "userId") Long userId
+            ){
+        return ResponseEntity.ok().body(productService.selectProductForModify(productId,userId));
     }
 }
