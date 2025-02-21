@@ -1,4 +1,4 @@
-package com.aplus.aplusmarket.dto.chat.response;
+package com.aplus.aplusmarket.dto.chat;
 
 import lombok.*;
 
