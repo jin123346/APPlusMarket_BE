@@ -34,6 +34,4 @@ public class Product {
     private Long buyerId;
     private List<Product_Images> images = new ArrayList<>();
 
-    private int sequence;
-    private String findProductId;
 }
