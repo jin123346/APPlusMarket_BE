@@ -13,6 +13,27 @@
 
 ---
 
+
+## 👥 Team Members(Full Stack Developer)
+| Name           | Role                  | GitHub                           |
+| -------------- | --------------------- | --------------------------------- |
+| **하진희**      | 유저등록 및 관리, 상품등록 및 수정, 마이페이지 | [GitHub](https://github.com/jin123346) |
+| **김민희**      | 애쁠페이   | [GitHub](https://github.com/minhi0449) |
+| **황수빈**      | 채팅 및 상품 뷰    | [GitHub](https://github.com/subin3578) |
+| **이도영**      | 상품 등록 및 상품 뷰   | [GitHub](https://github.com/DoyoungLee9720) |
+
+
+👥 Team Members
+Name	Role	GitHub
+하진희	FullStack Developer	GitHub
+김민희	FullStack Developer	GitHub
+황수빈	FullStack Developer	GitHub
+이도영	Full Stack Developer	GitHub
+
+
+---
+
+
 ## 📑 Table of Contents
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
