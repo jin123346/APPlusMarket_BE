@@ -18,13 +18,4 @@ public class ChatRoomSQLResultDTO {
     private int price;
     private Boolean isNegotiable;
     private int productId;
-    private int userId;
-    private String userName;
-    private String profileImage;
-    private int chatMessageId;
-    private String content;
-    private LocalDateTime createdAt;
-
-
-
 }

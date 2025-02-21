@@ -1,8 +1,9 @@
 package com.aplus.aplusmarket.dto.chat.response;
 
+import com.aplus.aplusmarket.dto.chat.ProductCardDTO;
+import com.aplus.aplusmarket.dto.chat.UserCardDTO;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,7 @@ public class ChatRoomDetailDTO {
 
     private ProductCardDTO productCard;
     private List<UserCardDTO> participants;
-    private List<ChatMessageDTO> messages;
+    private List<ChatMessageResponseDTO> messages;
 
 
     }
