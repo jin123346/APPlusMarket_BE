@@ -2,6 +2,7 @@ package com.aplus.aplusmarket.dto.chat.response;
 
 import com.aplus.aplusmarket.dto.chat.ProductCardDTO;
 import com.aplus.aplusmarket.dto.chat.UserCardDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import lombok.*;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class ChatRoomDetailDTO {
 
     private ProductCardDTO productCard;
     private List<UserCardDTO> participants;
-    private List<ChatMessageResponseDTO> messages;
+    private List<ChatMessageDTO> messages;
 
 
     }

@@ -1,6 +1,6 @@
 package com.aplus.aplusmarket.mapper.chat;
 import com.aplus.aplusmarket.dto.chat.UserCardDTO;
-import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
 import com.aplus.aplusmarket.dto.chat.response.*;
 import org.apache.ibatis.annotations.*;
@@ -145,13 +145,13 @@ public interface ChatMapper {
     void insertChatMapping(int chatRoomId, int userId);
 
     /** 메시지 삽입
-     * @param chatMessageCreateDTO
+     * @param chatMessageDTO
      * @return chatMessageId
      */
     @Insert("INSERT INTO tb_chat_message (chat_room_id, content, user_id, created_at) " +
             "VALUES (#{chatRoomId}, #{content}, #{senderId}, #{createdAt}) ")
     @Options(useGeneratedKeys = true, keyProperty = "chatMessageId")
-    int insertMessage(ChatMessageCreateDTO chatMessageCreateDTO);
+    int insertMessage(ChatMessageDTO chatMessageDTO);
 
 
 }
