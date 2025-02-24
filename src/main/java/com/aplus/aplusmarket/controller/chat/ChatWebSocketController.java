@@ -2,7 +2,7 @@ package com.aplus.aplusmarket.controller.chat;
 
 import com.aplus.aplusmarket.documents.ChatMessage;
 import com.aplus.aplusmarket.dto.ResponseDTO;
-import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -45,8 +45,8 @@ public class ChatWebSocketController {
      */
     @Transactional
     @MessageMapping("/chat/message")
-    public ResponseDTO sendMessage(ChatMessageCreateDTO chatMessage) {
-
+    public ResponseDTO sendMessage(ChatMessageDTO chatMessage) {
+        log.info("💻 메시지 저장 전 입력 값" +  chatMessage);
         ChatMessage result = chatMessageService.insertChatMessage(chatMessage);
         messagingTemplate.convertAndSend("/sub/chatroom/" + result.getChatRoomId(), result.toDTO(result));
         log.info("💻 웹소켓 메시지 저장 후 전송 "+ result);

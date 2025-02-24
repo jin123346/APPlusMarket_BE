@@ -6,15 +6,12 @@ import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.ProductCardDTO;
 import com.aplus.aplusmarket.dto.chat.UserCardDTO;
-import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
-import com.aplus.aplusmarket.dto.chat.response.ChatMessageResponseDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
 import com.aplus.aplusmarket.dto.chat.response.*;
 import com.aplus.aplusmarket.mapper.chat.ChatMapper;
-import com.aplus.aplusmarket.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,7 +101,7 @@ public class ChatService {
 
                 ChatRoomSQLResultDTO SqlResult = chatMapper.selectChatRoomInfo(chatRoomId);
                 List<UserCardDTO> participants = chatMapper.selectParticipantsByChatRoomId(chatRoomId);
-                List<ChatMessageResponseDTO> messages = chatMessageService.getChatMessages(chatRoomId);
+                List<ChatMessageDTO> messages = chatMessageService.getChatMessages(chatRoomId);
 
                 ProductCardDTO productCard = ProductCardDTO.builder()
                         .productId(SqlResult.getProductId())

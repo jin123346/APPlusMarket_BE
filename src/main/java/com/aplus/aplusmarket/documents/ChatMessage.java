@@ -1,7 +1,7 @@
 package com.aplus.aplusmarket.documents;
 
 
-import com.aplus.aplusmarket.dto.chat.response.ChatMessageResponseDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -31,16 +31,26 @@ public class ChatMessage {
     private LocalDateTime deletedAt;
     private Boolean isRead;
 
+    // appointment 용 컬럼
+    private String date;
+    private String time;
+    private String location;
+    private String locationDescription;
+    private int reminderBefore;
 
-    public ChatMessageResponseDTO toDTO(ChatMessage chatMessage){
-        return ChatMessageResponseDTO.builder()
-                ._id(chatMessage.get_id())
-                .senderId(chatMessage.getUserId())
+
+
+    public ChatMessageDTO toDTO(ChatMessage chatMessage){
+        return ChatMessageDTO.builder()
                 .chatRoomId(chatMessage.getChatRoomId())
+                .senderId(chatMessage.getUserId())
                 .content(chatMessage.getContent())
+                .date(chatMessage.getDate())
+                .time(chatMessage.getTime())
+                .location(chatMessage.getLocation())
+                .reminderBefore(chatMessage.getReminderBefore())
+                .locationDescription(chatMessage.getLocationDescription())
                 .createdAt(chatMessage.getCreatedAt())
-                .deletedAt(chatMessage.getDeletedAt())
-                .isRead(chatMessage.getIsRead())
                 .build();
     }
 }

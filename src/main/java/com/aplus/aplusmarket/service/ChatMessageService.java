@@ -1,11 +1,11 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.documents.ChatMessage;
-import com.aplus.aplusmarket.dto.chat.request.ChatMessageCreateDTO;
-import com.aplus.aplusmarket.dto.chat.response.ChatMessageResponseDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,16 +21,10 @@ public class ChatMessageService {
      * @param messageDTO
      * @return ChatMessage
      */
-    public ChatMessage insertChatMessage(ChatMessageCreateDTO messageDTO) {
+    public ChatMessage insertChatMessage(ChatMessageDTO messageDTO) {
 
-        ChatMessage message =
-                ChatMessage.builder()
-                .chatRoomId(messageDTO.getChatRoomId())
-                .userId(messageDTO.getSenderId())
-                .content(messageDTO.getContent())
-                .createdAt(LocalDateTime.now())
-                .build();
-
+       ChatMessage message =  messageDTO.toDocument(messageDTO);
+       message.setCreatedAt(LocalDateTime.now());
         return chatMessageRepository.save(message);
     }
 
@@ -38,10 +32,10 @@ public class ChatMessageService {
      * @param chatRoomId
      * @return List<ChatMessageResponseDTO>
      */
-    public List<ChatMessageResponseDTO> getChatMessages(int chatRoomId) {
+    public List<ChatMessageDTO> getChatMessages(int chatRoomId) {
         List<ChatMessage> messages = chatMessageRepository.findTop30ByChatRoomIdOrderByCreatedAtDesc(chatRoomId);
         return messages.stream()
-                .map(message -> new ChatMessageResponseDTO().toDTO(message))
+                .map(message -> message.toDTO(message))
                 .collect(Collectors.toList());
     }
 
