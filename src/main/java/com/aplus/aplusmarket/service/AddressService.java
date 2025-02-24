@@ -38,7 +38,9 @@ public class AddressService {
             }
 
             List<AddressBook> addressBooks =  addressBookMapper.findByUserId(userId);
-            if(addressBooks.isEmpty()){
+            log.info("조회된 주소 : {}",addressBooks);
+
+            if(addressBooks.isEmpty() || addressBooks.size() == 0){
                 return ResponseDTO.of("success",1321,"등록된 주소가 없습니다.");
             }
 
