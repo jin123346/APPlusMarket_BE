@@ -23,7 +23,7 @@
     <select id="SelectProductByIdForModify" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product" >
         <!-- SELECT * FROM tb_product WHERE id = #{id} -->
         SELECT
-        p.id AS product_id, p.title, p.product_name, p.content,
+        p.id , p.title, p.product_name, p.content,
         p.register_location, p.register_ip, p.created_at, p.updated_at, p.reload_at,
         p.price, p.status, p.deleted_at, p.seller_id,
         p.is_negotiable, p.is_possible_meet_you, p.category, p.brand,
@@ -123,7 +123,7 @@
 <!--        WHERE id = #{id}-->
 <!--    </update>-->
     <!--업데이트 기능이며 테스트를 거친 코드는 아닙니다.     -->
-    <update id="UpdateProduct" parameterType="com.aplus.aplusmarket.entity.Product">
+    <update id="updateProduct" parameterType="com.aplus.aplusmarket.entity.Product">
         UPDATE tb_product
         <set>
             <if test="title != null">title = #{title},</if>

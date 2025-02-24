@@ -2,10 +2,13 @@ package com.aplus.aplusmarket.controller;
 
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
+import com.aplus.aplusmarket.dto.product.requests.ProductModifyRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.service.ProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -41,8 +44,11 @@ public class ProductController {
     @PostMapping("/insert")
     public ResponseEntity insertProduct(
             @ModelAttribute ProductRequestDTO productRequestDTO,
-            @RequestPart("images") List<MultipartFile> images){
+            @RequestPart("images") List<MultipartFile> images,
+            HttpServletRequest request){
         log.info("images : "+ images.size());
+        String clientIp = request.getRemoteAddr();
+        productRequestDTO.setRegisterIp(clientIp);
         ResponseDTO responseDTO = productService.insertProduct(productRequestDTO, images);
         return ResponseEntity.ok().body(responseDTO);
     }
@@ -62,12 +68,6 @@ public class ProductController {
         return productService.selectProductsByPage(page,pageSize);
     }
 
-    // 상품 데이터 업데이트 기능 (구조만 만들었을뿐 기능은 구현되지 않았습니다.)
-    @PutMapping("/update")
-    public boolean updateProduct(@RequestBody ProductRequestDTO productRequestDTO){
-        boolean check = productService.updateProduct(productRequestDTO);
-        return check;
-    }
 
     @GetMapping("/on-sale")
     public ResponseEntity selectProductForSelling(@RequestBody ProductListRequestDTO productListRequestDTO){
@@ -97,5 +97,29 @@ public class ProductController {
             @PathVariable(value = "userId") Long userId
             ){
         return ResponseEntity.ok().body(productService.selectProductForModify(productId,userId));
+    }
+
+    @PutMapping("/modify/{productId}/{userId}")
+    public ResponseEntity updateProductForModify( @RequestPart("data") String jsonData,  // ✅ @RequestBody 사용
+                                                  @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages,
+            @PathVariable(value = "productId") Long productId,
+            @PathVariable(value = "userId") Long userId,HttpServletRequest request){
+        ObjectMapper mapper = new ObjectMapper();
+        ProductModifyRequestDTO requestDTO;
+        try {
+            requestDTO = mapper.readValue(jsonData, ProductModifyRequestDTO.class);
+
+            String clientIp = request.getRemoteAddr();
+            requestDTO.setRegisterIp(clientIp);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.badRequest().body("Invalid JSON data");
+        }
+        log.info("수정할 내용 : {} ",requestDTO);
+        requestDTO.setNewImages(newImages);
+
+
+
+
+        return ResponseEntity.ok().body(productService.updateProduct(requestDTO));
     }
 }

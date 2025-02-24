@@ -1,4 +1,5 @@
 package com.aplus.aplusmarket.mapper.product;
+import com.aplus.aplusmarket.dto.product.requests.ProductModifyRequestDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.entity.ProductResponseCard;
 import org.apache.ibatis.annotations.*;
@@ -11,7 +12,7 @@ public interface ProductMapper {
     Product SelectProductById(Long id);
     Product SelectProductByIdForModify(Long id);
     List<Product> SelectAllProducts();
-    boolean UpdateProduct(Product product);
+    boolean updateProduct(Product product);
     boolean DeleteProduct(Long id);
     List<ProductResponseCard> SelectProductsPage(@Param("pageSize") int pageSize, @Param("offset") int offset);
     List<ProductResponseCard> selectProductByIdForStatus(@Param("lastIndex") long lastIndex ,@Param("userId") long userId,@Param("status") String status );

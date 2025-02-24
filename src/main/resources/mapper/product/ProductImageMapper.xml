@@ -13,9 +13,22 @@
         SELECT * FROM tb_product_image WHERE product_id = #{productId}
     </select>
 
+    <select id="SelectProductImageById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product_Images">
+        SELECT * FROM tb_product_image WHERE id = #{id}
+    </select>
+
     <!-- DELETE 상품 이미지 삭제-->
     <delete id="DeleteProductImageByProductId" parameterType="long">
         DELETE FROM tb_product_image WHERE product_id = #{productId}
     </delete>
+   <delete id="deleteById" parameterType="long" >
+        DELETE FROM tb_product_image WHERE id = #{productId}
+    </delete>
+
+    <update id="updateSequence" parameterType="com.aplus.aplusmarket.dto.product.requests.ImageItemDTO">
+        UPDATE tb_product_image
+        SET  sequence = #{sequence}
+        WHERE id= #{itemId}
+    </update>
 
 </mapper>
