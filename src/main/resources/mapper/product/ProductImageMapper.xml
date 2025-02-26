@@ -10,7 +10,7 @@
 
     <!-- SELECT BY ID 상품 이미지 선택-->
     <select id="SelectProductImageByProductId" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product_Images">
-        SELECT * FROM tb_product_image WHERE product_id = #{productId}
+        SELECT * FROM tb_product_image WHERE product_id = #{productId} ORDER BY sequence Asc;
     </select>
 
     <select id="SelectProductImageById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product_Images">
@@ -25,7 +25,7 @@
         DELETE FROM tb_product_image WHERE id = #{productId}
     </delete>
 
-    <update id="updateSequence" parameterType="com.aplus.aplusmarket.dto.product.requests.ImageItemDTO">
+    <update id="updateSequence" parameterType="com.aplus.aplusmarket.entity.ProductResponseCard">
         UPDATE tb_product_image
         SET  sequence = #{sequence}
         WHERE id= #{itemId}

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ImageItemDTO {
     private String id;
-    private int itemId;
+    private Long itemId;
     private int sequence;
 }
 

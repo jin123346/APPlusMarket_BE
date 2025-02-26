@@ -86,7 +86,6 @@ public class AuthController {
         // ✅ 성공 응답인 경우 (새 Access Token 포함)
         if (responseDTO instanceof DataResponseDTO) {
             DataResponseDTO dataResponseDTO = (DataResponseDTO) responseDTO;
-
             // ✅ 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
             return ResponseEntity.ok()
                     .body(dataResponseDTO);
@@ -101,11 +100,14 @@ public class AuthController {
 
     //나의 정보 기능
     @GetMapping("/myInfo")
-    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken") String refreshToken){
+    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken",required = false) String refreshToken){
         Long id =(Long)request.getAttribute("id");
-        log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
         String uid="";
         ResponseDTO responseDTO;
+        if(refreshToken == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseDTO.of("failed",401,"로그인이 필요합니다."));
+        }
+        log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
         if(id == null || id == 0){
              uid = authService.getIdWithRefreshToken(refreshToken);
             if(uid==null) {

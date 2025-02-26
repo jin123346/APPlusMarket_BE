@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper
 public interface ProductMapper {
     boolean InsertProduct(Product product);
-    Product SelectProductById(Long id);
+    Product SelectProductById(@Param("id") Long id,@Param("userId") Long userId);
     Product SelectProductByIdForModify(Long id);
     List<Product> SelectAllProducts();
     boolean updateProduct(Product product);

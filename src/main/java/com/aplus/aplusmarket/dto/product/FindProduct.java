@@ -27,6 +27,7 @@ public class FindProduct {
     private String productUrl;
     private String brandName;
     private String categoryName;
+    private String goodsId;
 
     public static FindProduct toDTO(Products products){
         return FindProduct.builder()
@@ -39,6 +40,7 @@ public class FindProduct {
                 .name(products.getName())
                 .productCode(products.getProductCode())
                 .productDetailCode(products.getProductDetailCode())
+                .goodsId(products.getGoodsId())
                 .build();
     }
 
