@@ -30,9 +30,18 @@ spring:
         multipart:
             enabled: true
             location: uploads/
+
     data:
         mongodb:
             uri: mongodb://root:Qwe1234~!@43.202.32.28:27017/applus?authSource=admin
+        redis:
+            host: 43.202.32.28
+            port: 6379
+            repositories:
+                enabled: true
+            lettuce:
+                pool:
+                    max-wait: 5000ms
 
 mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로

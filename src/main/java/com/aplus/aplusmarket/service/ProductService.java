@@ -15,8 +15,10 @@ import com.aplus.aplusmarket.dto.product.response.ProductResponseCardDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.entity.ProductResponseCard;
 import com.aplus.aplusmarket.entity.Product_Images;
+import com.aplus.aplusmarket.entity.WishList;
 import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
+import com.aplus.aplusmarket.mapper.product.WishListMapper;
 import com.aplus.aplusmarket.repository.ProductsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,7 @@ public class ProductService {
     private final ProductsRepository productsRepository;
     private final FileService fileService;
     private final ObjectMapper objectMapper;
+    private final WishListMapper wishListMapper;
     //파일 업로드 경로
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
@@ -100,10 +103,10 @@ public class ProductService {
     }
 
     // 상품 세부 정보 가지고 오는 기능
-    public ResponseDTO selectProductById(String id) {
+    public ResponseDTO selectProductById(String id,Long userId) {
         try{
             //전달 받은 상품 번호를 이용하여 상품의 세부 정보를 가지고 옵니다.
-            Product product = productMapper.SelectProductById(Long.parseLong(id));
+            Product product = productMapper.SelectProductById(Long.parseLong(id),userId);
             log.info("product : "+product);
             ProductDTO productDTO = toDTO(product);
 
@@ -138,6 +141,21 @@ public class ProductService {
             // DTO에 이미지 리스트 추가
             productDTO.setImages(imageDTOs);
 
+                if(userId !=null){
+                    Optional<WishList> opt = wishListMapper.selectWishList(product.getId(),userId);
+                    if(opt.isPresent()){
+                        productDTO.setWished(true);
+                    }
+                }
+
+            if(product.getFindProductId() != null ){
+                Optional<Products> opt = productsRepository.findById(product.getFindProductId());
+                if(opt.isPresent()){
+                    Products products = opt.get();
+                   FindProduct findProduct =  FindProduct.toDTO(products);
+                   productDTO.setFindProduct(findProduct);
+                }
+            }
             log.info("Selected Product with Images: " + productDTO);
             return DataResponseDTO.of(productDTO, 2002, "상품 상세 정보 조회 성공");
         }catch (Exception e){
@@ -156,9 +174,9 @@ public class ProductService {
 
 
     // 상품 삭제 기능(현재 상품에 대한 데이터를 삭제하는 식으로 되어 있습니다. 해당 기능은 조금 수정 해야 할것으로 보입니다.)
-    public boolean deleteProductById(String id) {
+    public boolean deleteProductById(String id,Long userId) {
         //현재는 상품 먼저 삭제하고 있는데 이미지 부터 먼저 삭제하는것부터 해야 합니다.
-        Product product = productMapper.SelectProductById(Long.parseLong(id)); // 존재 여부 확인
+        Product product = productMapper.SelectProductById(Long.parseLong(id),userId); // 존재 여부 확인
         if (product == null) {
             log.warn("No product found to delete with ID: " + id);
             return false;
@@ -315,7 +333,7 @@ public class ProductService {
     @Transactional(rollbackFor = Exception.class)
     public ResponseDTO updateProduct(ProductModifyRequestDTO requestDTO){
         try{
-            String path= USER_DIR+"/"+uploadPath+"/"+requestDTO.getId().toString();
+            String path= USER_DIR+"/"+uploadPath+requestDTO.getId().toString()+"/";
 
             //삭제 먼저,
             if (requestDTO.getRemovedImages() != null) {
@@ -332,8 +350,11 @@ public class ProductService {
             int length = 0;
             if (requestDTO.getExistingImages() != null) {
                 for (ImageItemDTO img : requestDTO.getExistingImages()) {
-                    productImageMapper.updateSequence(Long.valueOf(img.getId()), length);
+                    productImageMapper.updateSequence(Long.valueOf(img.getId()), img.getSequence());
                     length ++;
+                    if(img.getSequence() == length){
+                        length++;
+                    }
                 }
             }
 
@@ -343,7 +364,7 @@ public class ProductService {
             if (requestDTO.getNewImages() != null) {
                 for (MultipartFile file : requestDTO.getNewImages()) {
                     Product_Images productImages = fileService.uploadProductImage(file,path,requestDTO.getId());
-                    if(productImages != null){
+                    if(productImages == null){
                         //에러처리
                         throw new RuntimeException(" productImages가 null, 업로드 실패!");
 
@@ -483,6 +504,7 @@ public class ProductService {
                 .category(product.getCategory())
                 .brand(product.getBrand())
                 .buyerId(product.getBuyerId())
+                .isWished(product.isWished())
                 .ProductImages(product.getImages().stream().map(Product_ImagesDTO::toDTO).toList())
                 .build();
     }

@@ -7,6 +7,7 @@ import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.service.ProductService;
+import com.aplus.aplusmarket.service.WishAndRecentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +18,25 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 /*
-*   2025-02-10 이도영 : 주석 추가
-* */
+ * packageName    : com/aplus/aplusmarket/controller/ProductController.java
+ * fileName       : ProductController.java
+ * author         : 하진희
+ * date           : 2024/02/05
+ * description    : product 컨트롤러
+ *
+ * =============================================================
+ * DATE           AUTHOR             NOTE
+ * -------------------------------------------------------------
+ * 2025-02-10     이도영     주석 추가
+ * 2025-02-15     하진희     판매중상품, 완료상품, 숨김상품 컨트롤러 추가
+ * 2025-02-20     하진희     상품 수정
+ * 2025-02-25     하진희     상품상세보기 수정, 관심상품 처리
+ * 2025-02-26     하진희     관심상품 처리
+ *
+ */
+
 @RestController
 @RequiredArgsConstructor
 @Log4j2
@@ -27,6 +44,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final WishAndRecentService wishAndRecentService;
+
     //상품 전체 가지고 오기 (사용하지 않습니다) getProducts로 상품 리스트 가지고 오는걸로 변경
 //    @GetMapping("/list")
 //    public List<Product> selectAllProducts() {
@@ -36,8 +55,10 @@ public class ProductController {
 //    }
     //선택한 상품 정보 가지고 오기
     @GetMapping("/{id}")
-    public ResponseDTO selectProductById(@PathVariable String id) {
-        return productService.selectProductById(id);
+    public ResponseDTO selectProductById(@PathVariable(value = "id") String id,@RequestParam(required = false) Long userId) {
+        // 최근본 상품에 등록하는 로직 필요
+
+        return productService.selectProductById(id,userId);
     }
 
     //상품 등록
@@ -54,9 +75,9 @@ public class ProductController {
     }
 
     //상품 삭제(프론트 기능 없습니다 현재)
-    @DeleteMapping("/delete/{id}")
-    public boolean deleteProductById(@PathVariable String id) {
-        boolean check = productService.deleteProductById(id);
+    @DeleteMapping("/delete/{id}/{userId}")
+    public boolean deleteProductById(@PathVariable(value = "id") String id,@PathVariable(value = "userId") Long userId) {
+        boolean check = productService.deleteProductById(id,userId);
         return check;
     }
     
@@ -121,5 +142,21 @@ public class ProductController {
 
 
         return ResponseEntity.ok().body(productService.updateProduct(requestDTO));
+    }
+
+    @PutMapping("/wish/{productId}/{userId}")
+    public ResponseEntity updateWish(@PathVariable(value="productId") Long productId,@PathVariable(value="userId") Long userId){
+        log.info("관심상품 설정 : {} ,{} ",productId,userId);
+        ResponseDTO responseDTO = wishAndRecentService.updateWishList(productId,userId);
+        return ResponseEntity.ok().body(responseDTO);
+    }
+
+
+    @GetMapping("/wish/list")
+    public ResponseEntity getWishList(HttpServletRequest request){
+        Long userId = (Long)request.getAttribute("id");
+        log.info("userid : {}",userId);
+
+        return ResponseEntity.ok().body(wishAndRecentService.selectWishLit(userId));
     }
 }

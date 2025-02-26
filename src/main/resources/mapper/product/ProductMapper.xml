@@ -12,12 +12,16 @@
     </insert>
 
     <!-- SELECT BY ID 상품 아이디를 통해 상품 상세 정보와 판매자 닉네임을 가지고 옵니다-->
-    <select id="SelectProductById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product">
+    <select id="SelectProductById" resultType="com.aplus.aplusmarket.entity.Product">
         <!-- SELECT * FROM tb_product WHERE id = #{id} -->
-        SELECT p.*, u.nickname FROM tb_product AS p
+        SELECT p.*, u.nickname,
+               CASE WHEN w.id IS NOT NULL then true Else False End as isWished
+               FROM tb_product AS p
             LEFT JOIN tb_user u ON p.seller_id = u.id
+            <if test="userId != null ">
+                LEFT JOIN tb_wish_list  w ON (p.id = w.product_id AND w.user_id = #{userId})
+            </if>
              WHERE p.id = #{id}
-
     </select>
 
     <select id="SelectProductByIdForModify" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product" >

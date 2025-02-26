@@ -123,6 +123,7 @@ public class SamsungCrawlerService {
                 String modelCode = product.getString("mdlCode"); // 제품코드(색상포함 코드인듯)
                 String mdlNm = product.getString("mdlNm"); // 제품코드
                 String priceStr = product.getString("priceStr");
+                String goodsId = product.getString("goodsId");
                 String[] priceDat = priceStr.split("\\|");
                 int size = priceDat.length;
                 String originalPrice = priceDat[size-2];
@@ -133,6 +134,7 @@ public class SamsungCrawlerService {
                         .category(category)
                         .brand(samsungBrand)
                         .originalPrice(Double.parseDouble(originalPrice))
+                        .goodsId(goodsId)
                         .finalPrice(Double.parseDouble(salePrice))
                         .productCode(mdlNm)
                         .productDetailCode(modelCode)
