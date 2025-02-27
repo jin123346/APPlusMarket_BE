@@ -64,11 +64,18 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.AWS_EC2_KEY }}
+      # - name: Add Host to Known Hosts
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
+      #     cat ~/.ssh/known_hosts
       - name: Add Host to Known Hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
-          cat ~/.ssh/known_hosts
+          HOST_KEYS=$(ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }})
+          echo "$HOST_KEYS" >> ~/.ssh/known_hosts
+          echo "::add-mask::$HOST_KEYS"
+
 
       - name: Copy JAR to EC2
         run: |
