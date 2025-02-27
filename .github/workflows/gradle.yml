@@ -55,8 +55,10 @@ jobs:
         run: |
           sudo apt-get install -y tree
           tree -L 3
-      - name: Display build.gradle from parent directory
-        run: cat ../build.gradle    
+      - name: Find build.gradle in entire system
+        run: |
+          sudo find / -name "build.gradle"
+  
       - name: Display current working directory
         run: pwd 
       - name: Display build.gradle
