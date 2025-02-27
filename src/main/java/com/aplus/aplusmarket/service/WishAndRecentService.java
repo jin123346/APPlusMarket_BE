@@ -6,7 +6,6 @@ import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.ProductCardDTO;
 import com.aplus.aplusmarket.entity.ProductResponseCard;
 import com.aplus.aplusmarket.entity.WishList;
-import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import com.aplus.aplusmarket.mapper.product.WishListMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,7 +13,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /*
  * packageName    : com.aplus.aplusmarket.service/WishAndRecentService.java
@@ -37,6 +38,7 @@ public class WishAndRecentService {
     private final WishListMapper wishListMapper;
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String KEY_RECENT_PREFIX = "recent:";
+    private static final String KEY_GUEST_PREFIX = "guest:";
 
 
     //관심상품 처리 로직
@@ -44,12 +46,11 @@ public class WishAndRecentService {
     public ResponseDTO updateWishList(Long productId, Long userId){
         log.info("관심상품 처리 로직 시작");
         try{
-            Optional<WishList> opt = wishListMapper.selectWishList(productId,userId);
+            long wishListId = wishListMapper.selectWishList(productId,userId);
             log.info("기존 관심상품 유무 체크 완료");
+            if(wishListId > 0){
 
-            if(opt.isPresent()){
-                WishList wishList  = opt.get();
-                wishListMapper.deleteById(wishList.getId());
+                wishListMapper.deleteById(wishListId);
                 log.info("기존 관심상품 삭제 => 관심상품 해제 완료");
 
                 return ResponseDTO.of("Success",3032,"관심상품 해제 완료");
@@ -83,8 +84,59 @@ public class WishAndRecentService {
     }
 
     public ResponseDTO addRecentList(ProductCardDTO cardDTO){
-        String key = KEY_RECENT_PREFIX+cardDTO.getUserId();
-        return null;
+
+        try{
+            String key;
+            if(cardDTO.getUserId() != null){
+                key = KEY_RECENT_PREFIX+cardDTO.getUserId();
+            }else{
+                key = KEY_GUEST_PREFIX+cardDTO.getTmpUserId();
+            }
+
+            //기존 리스트 가져오기
+            double score = System.currentTimeMillis() / 1000.0;
+
+            redisTemplate.opsForZSet().add(key,cardDTO,score);
+            redisTemplate.opsForList().set(key, 0,10);
+
+            redisTemplate.expire(key, Duration.ofDays(2));
+
+            return ResponseDTO.of("success",2038,"최근봉상품 등록");
+        }catch(Exception e){
+            log.error(e.getMessage());
+            return null;
+        }
+
+
+
+
     }
+
+    public DataResponseDTO getRecentProducts(Long userId) {
+        String key = KEY_RECENT_PREFIX+userId;
+        Set<Object> productLists =  redisTemplate.opsForZSet().range(key,0,-1);
+
+
+        return DataResponseDTO.of(productLists,2039,"최근본 상품 리스트");
+    }
+
+    public void mergeGuestDataToUser(String tempUserId, Long userId) {
+        String guestKey =KEY_GUEST_PREFIX + tempUserId;
+        String userKey = KEY_RECENT_PREFIX + userId;
+
+        // 1. 비회원 데이터 가져오기
+        Set<Object> guestData = redisTemplate.opsForZSet().range(guestKey, 0, -1);
+
+        // 2. 회원 데이터 가져오기
+        Set<Object> userData = redisTemplate.opsForZSet().range(userKey, 0, -1);
+
+        redisTemplate.opsForZSet().unionAndStore(userKey, guestKey,userKey);
+
+        // 7일 동안 유지되도록 설정
+        redisTemplate.expire(userKey, Duration.ofDays(7));
+        // 5. 비회원 데이터 삭제
+        redisTemplate.delete(guestKey);
+    }
+
 
 }

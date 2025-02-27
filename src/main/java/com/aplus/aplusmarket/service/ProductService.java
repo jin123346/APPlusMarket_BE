@@ -142,8 +142,8 @@ public class ProductService {
             productDTO.setImages(imageDTOs);
 
                 if(userId !=null){
-                    Optional<WishList> opt = wishListMapper.selectWishList(product.getId(),userId);
-                    if(opt.isPresent()){
+                    long wishListId = wishListMapper.selectWishList(product.getId(),userId);
+                    if(wishListId>0){
                         productDTO.setWished(true);
                     }
                 }

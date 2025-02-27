@@ -9,6 +9,7 @@ import com.aplus.aplusmarket.entity.User;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import com.aplus.aplusmarket.service.AuthService;
 import com.aplus.aplusmarket.service.UserService;
+import com.aplus.aplusmarket.service.WishAndRecentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jdk.jshell.Snippet;
