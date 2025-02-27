@@ -27,7 +27,7 @@ jobs:
       - name: Get JAR_FILE
         id: jarfile
         run: |
-          JAR_FILE=$(ls build/libs/*.jar | grep -v plain | head -n 1)
+          JAR_FILE=$(ls build/libs/*.jar | head -n 1)
           echo "::add-mask::$JAR_FILE"
           echo "JAR_FILE=${JAR_FILE}" >> $GITHUB_ENV
 
@@ -63,37 +63,34 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.AWS_EC2_KEY }}
-      # - name: Add Host to Known Hosts
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #     ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
-      #     cat ~/.ssh/known_hosts
       - name: Add Host to Known Hosts
         run: |
           mkdir -p ~/.ssh
-          HOST_KEYS=$(ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }})
-          echo "$HOST_KEYS" >> ~/.ssh/known_hosts
-          echo "::add-mask::$HOST_KEYS"
+          ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          
+      # - name: Add Host to Known Hosts
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     HOST_KEYS=$(ssh-keyscan -t rsa,ecdsa,ed25519 -H ${{ secrets.AWS_EC2_HOST }})
+      #     echo "$HOST_KEYS" >> ~/.ssh/known_hosts
+      #     echo "::add-mask::$HOST_KEYS"
       - name: Copy JAR to EC2
         run: |
           JAR_FILE=$(ls -t build/libs/*.jar | head -n 1)
           echo "=== DEBUG: Selected JAR_FILE is $JAR_FILE ==="
-          scp \
-            -o StrictHostKeyChecking=no \
+          scp -C \
             -o UserKnownHostsFile=~/.ssh/known_hosts \
             $JAR_FILE \
             ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
-
-
-      # - name: Copy JAR to EC2
-      #   run: |
-      #     JAR_FILE=$(ls build/libs/*.jar | head -n 1)
-      #     scp \
-      #       -o StrictHostKeyChecking=yes \
-      #       -o UserKnownHostsFile=/dev/null \
-      #       $JAR_FILE \
-      #       ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }}:/home/${{ secrets.AWS_EC2_USER }}/
-
+      - name : Link to latest.jar 
+        run: |
+          ssh \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
+            JAR_FILE=\$(ls -t /home/ec2-user/Aplusmarket-*.jar | head -n 1)
+            ln -sfn \$JAR_FILE /home/ec2-user/Aplusmarket-latest.jar
+          EOF
       
       - name: Restart Spring Application
         run: |
@@ -103,4 +100,15 @@ jobs:
             sudo systemctl stop my-spring-app
             sudo systemctl start my-spring-app
             sudo journalctl -u my-spring-app -n 50 --no-pager
+          EOF
+      # 실패시 이전 버전으로 롤백 가능하도록 하는것 
+      - name: Rollback to Previous Version
+        if: failure()
+        run: |
+          ssh \
+            -o StrictHostKeyChecking=yes \
+            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
+            PREV_JAR_FILE=\$(ls -t /home/ec2-user/*.jar | head -n 2 | tail -n 1)
+            ln -sfn \$PREV_JAR_FILE /home/ec2-user/Aplusmarket-latest.jar
+            sudo systemctl restart my-spring-app
           EOF
