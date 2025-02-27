@@ -51,7 +51,7 @@ public class AuthController {
     public ResponseEntity<?> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken,
                                     @RequestParam(value = "userId", required = false, defaultValue = "0") Long userId,
                                     HttpServletResponse response) {
-        // ✅ Refresh Token 삭제를 위한 빈 쿠키 설정
+        // Refresh Token 삭제를 위한 빈 쿠키 설정
 
         log.info("logout Token!!"+refreshToken);
 
@@ -78,20 +78,20 @@ public class AuthController {
         }
         ResponseDTO responseDTO = authService.refreshToken(refreshToken,resp);
 
-        // ✅ 실패 응답인 경우
+        // 실패 응답인 경우
         if (responseDTO instanceof ErrorResponseDTO) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
         }
 
-        // ✅ 성공 응답인 경우 (새 Access Token 포함)
+        // 성공 응답인 경우 (새 Access Token 포함)
         if (responseDTO instanceof DataResponseDTO) {
             DataResponseDTO dataResponseDTO = (DataResponseDTO) responseDTO;
-            // ✅ 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
+            // 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
             return ResponseEntity.ok()
                     .body(dataResponseDTO);
         }
 
-        // ✅ 예외 상황 (이론적으로 발생하지 않지만, 예외 처리를 위해 추가)
+        // 예외 상황 (이론적으로 발생하지 않지만, 예외 처리를 위해 추가)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.of(1007, "알 수 없는 오류가 발생했습니다."));
 
