@@ -11,6 +11,6 @@ import java.util.List;
 public interface WishListMapper {
     int insertWishList(@Param("productId") Long productId, @Param("userId") Long userId);
     int deleteById(@Param("id") Long id);
-    Optional<WishList> selectWishList(@Param("productId") Long productId, @Param("userId") Long userId);
+    long selectWishList(@Param("productId") Long productId, @Param("userId") Long userId);
     List<ProductResponseCard> productWishList(@Param("userId") long userId);
 }

@@ -48,6 +48,7 @@ public class AuthService {
     private final TokenHistoryRepository tokenHistoryRepository;
 
     private final MongoTemplate mongoTemplate;
+    private final WishAndRecentService wishAndRecentService;
 
     //로그인 서비스
 
@@ -113,6 +114,11 @@ public class AuthService {
             //  MongoDB에 토큰 저장 (토큰 히스토리)
             TokenHistory saveTokenToDB = jwtTokenProvider.saveTokenToDB(user.getId(), refreshToken, loginRequest.getDeviceInfo(), request);
             if (saveTokenToDB != null) {
+
+                //
+                wishAndRecentService.mergeGuestDataToUser(loginRequest.getTempUserId(),loginUser.getId());
+
+
                 log.info("로그인 성공 - 아이디: {}", loginRequest.getUid());
                 return new DataResponseDTO<>(loginUser, 1000, "로그인 성공");
             } else {

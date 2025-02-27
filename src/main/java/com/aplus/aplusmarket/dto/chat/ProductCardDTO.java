@@ -17,4 +17,8 @@ public class ProductCardDTO {
     private String thumbnailImage;
     private Boolean isNegotiable;
     private Long userId;
+    private String tmpUserId;
+
+
+
 }
