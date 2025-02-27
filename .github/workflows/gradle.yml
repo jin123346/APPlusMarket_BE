@@ -48,7 +48,8 @@ jobs:
         with:
           name: app
           path: build/libs/
-
+      - name: List files in build/libs
+        run: ls -al build/libs/
       - name: Add SSH Key
         uses: webfactory/ssh-agent@v0.5.3
         with:
