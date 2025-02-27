@@ -48,8 +48,18 @@ jobs:
         with:
           name: app
           path: build/libs/
+          
       - name: List files in build/libs
         run: ls -al build/libs/
+      - name: Display directory tree
+        run: |
+          sudo apt-get install -y tree
+          tree -L 3
+      - name: Display build.gradle
+        run: cat build.gradle
+      - name: Display environment variables
+        run: env
+        
       - name: Add SSH Key
         uses: webfactory/ssh-agent@v0.5.3
         with:
