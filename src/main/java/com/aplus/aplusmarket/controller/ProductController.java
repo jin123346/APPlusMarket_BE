@@ -84,9 +84,21 @@ public class ProductController {
     //상품 페이징 처리 (메인 홈 화면만 출력되고 있습니다)
     @GetMapping("/listpage")
     public ResponseDTO  getProducts(
-            @RequestParam (defaultValue = "1") int page,
-            @RequestParam (defaultValue = "10") int pageSize){
-        return productService.selectProductsByPage(page,pageSize);
+            @RequestParam (defaultValue = "0") int lastIndex,
+            @RequestParam (defaultValue = "6") int pageSize,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String keyword){
+
+        if(keyword == null){
+            keyword = "";
+        }
+
+        if(brand == null){
+            brand = "";
+        }
+        log.info("요청한 리스트  keyword : {} , brand :{}", keyword, brand);
+
+        return productService.selectProductsByPage(lastIndex,pageSize,keyword,brand);
     }
 
 

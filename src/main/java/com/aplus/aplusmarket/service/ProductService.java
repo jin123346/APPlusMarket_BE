@@ -11,6 +11,7 @@ import com.aplus.aplusmarket.dto.product.requests.ProductModifyRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
+import com.aplus.aplusmarket.dto.product.response.ProductListResponseDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductResponseCardDTO;
 import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.entity.ProductResponseCard;
@@ -164,12 +165,6 @@ public class ProductService {
         }
     }
 
-    // 전체 상품 가지고 오기 (사용하지 않습니다)
-    public List<Product> selectAllProducts() {
-        List<Product> products = productMapper.SelectAllProducts(); // 전체 조회
-        log.info("All Products: " + products);
-        return products;
-    }
 
 
 
@@ -186,17 +181,34 @@ public class ProductService {
     }
 
     //상품 페이징 처리 기능 (메인 화면)
-    public ResponseDTO selectProductsByPage(int page, int pageSize) {
+    public ResponseDTO selectProductsByPage(int lastIndex, int pageSize,String keyword,String brand) {
         try {
-            int offset = (page - 1) * pageSize;
-            List<ProductResponseCard> dtoList = productMapper.SelectProductsPage(pageSize, offset);
+            long total = productMapper.countProductsForState("Active",brand,keyword);
+            int totalPage = (int) Math.ceil((double) total / pageSize);
+            List<ProductResponseCard> dtoList = productMapper.SelectProductsPage(pageSize, lastIndex,brand,keyword);
 
             List<ProductResponseCardDTO> products = dtoList.stream()
                     .map(this::toDTO)
                     .collect(Collectors.toList());
 
-            log.info("Products (Page: " + page + ", PageSize: " + pageSize + "): " + products);
-            return DataResponseDTO.of(products, 2004, "상품 목록 조회 성공");
+
+            long newLastIndex = 0;
+            if(!products.isEmpty()){
+                newLastIndex = products.get(products.size()-1).getId();
+            }
+
+            log.info("Products (lastIndex: " + lastIndex + ", PageSize: " + pageSize + "): " + products);
+            ProductListResponseDTO listResponseDTO = ProductListResponseDTO.builder()
+                    .isFirst(lastIndex == 0)
+                    .lastIndex(newLastIndex)
+                    .size(pageSize)
+                    .isLast(products.size() != pageSize)
+                    .totalPage(totalPage)
+                    .products(products)
+                    .build();
+            log.info("새로운 lastIndex : {}",newLastIndex);
+
+            return DataResponseDTO.of(listResponseDTO, 2004, "상품 목록 조회 성공");
         } catch (Exception e) {
             log.error("상품 목록 조회 실패", e);
             return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
@@ -207,6 +219,7 @@ public class ProductService {
     //나의 현재 판매중인 상품 조회
     public ResponseDTO selectProductByIdForSelling(ProductListRequestDTO productListRequestDTO){
         try{
+
             List<ProductResponseCard> products
                     = productMapper.selectProductByIdForStatus(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId(),productListRequestDTO.getStatus());
             log.info(products);
