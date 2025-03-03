@@ -48,7 +48,7 @@ mybatis:
     config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
     type-aliases-package: com.aplus.aplusmarket.entity,  com.aplus.aplusmarket.dto # TypeAlias 사용할 패키지 경로
 server:
-    port: 8080
+    port:  ${SERVER_PORT:8080}
     servlet:
         context-path: /
     address: 0.0.0.0
