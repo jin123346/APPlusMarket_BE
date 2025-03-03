@@ -95,14 +95,49 @@ jobs:
             ln -sfn \$JAR_FILE /home/ec2-user/Aplusmarket-latest.jar
           EOF
       
-      - name: Restart Spring Application
+      - name: Deploy New Version with Blue-Green Deployment
         run: |
-          ssh \
-            -o StrictHostKeyChecking=yes \
-            ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
-            sudo systemctl stop my-spring-app
-            sudo systemctl start my-spring-app
-            sudo journalctl -u my-spring-app -n 50 --no-pager
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
+          set -e
+          
+          # 현재 실행 중인 포트 확인
+          CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || echo "8082")
+          echo "Current running port is: \$CURRENT_PORT"
+
+          # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
+          if [ "\$CURRENT_PORT" == "8081" ]; then
+              NEW_PORT=8082
+              OLD_SERVICE="my-spring-app-1"
+              NEW_SERVICE="my-spring-app-2"
+          else
+              NEW_PORT=8081
+              OLD_SERVICE="my-spring-app-2"
+              NEW_SERVICE="my-spring-app-1"
+          fi
+          echo "New application will run on port: \$NEW_PORT"
+
+          # 기존 서비스 중지
+          sudo systemctl stop \$NEW_SERVICE || true
+
+          # 새로운 JAR 파일을 올바른 위치로 이동
+          mv /home/ec2-user/*.jar /home/ec2-user/Aplusmarket-\$NEW_PORT.jar
+
+          # 서비스 파일 업데이트
+          sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar -Dserver.port=\$NEW_PORT /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
+
+          # systemd 재로드 후 새로운 서비스 시작
+          sudo systemctl daemon-reload
+          sudo systemctl start \$NEW_SERVICE
+          sleep 10
+          
+          # 애플리케이션 실행 확인
+          if ! curl -s http://127.0.0.1:\$NEW_PORT/actuator/health | grep -q 'UP'; then
+              echo "New application failed to start!"
+              exit 1
+          fi
+
+          echo "Deployment successful! Traffic switched to port \$NEW_PORT"
+
           EOF
       # 실패시 이전 버전으로 롤백 가능하도록 하는것 
       - name: Rollback to Previous Version
