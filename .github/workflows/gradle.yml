@@ -101,7 +101,7 @@ jobs:
           set -e
           
           # 현재 실행 중인 포트 확인
-          CURRENT_PORT=$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
+          CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
           echo "Current running port is: \$CURRENT_PORT"
 
           # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
@@ -119,12 +119,13 @@ jobs:
           # 기존 서비스 중지
           sudo systemctl stop \$NEW_SERVICE || true
 
-          # 새로운 JAR 파일을 올바른 위치로 이동
-          LATEST_JAR=$(ls -t /home/ec2-user/*.jar | head -n 1)
-          mv "$LATEST_JAR" "/home/ec2-user/Aplusmarket-$NEW_PORT.jar"
+          # 최신 JAR 파일 찾기 및 이름 변경
+          LATEST_JAR=\$(ls -t /home/ec2-user/*.jar | head -n 1)
+          mv "\$LATEST_JAR" "/home/ec2-user/Aplusmarket-\$NEW_PORT.jar"
 
-          # 서비스 파일 업데이트
-          sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar -Dserver.port=\$NEW_PORT /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
+          # 환경 변수 기반 서비스 업데이트
+          sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
+          sudo sed -i "s|Environment=.*|Environment=\"SERVER_PORT=\$NEW_PORT\"|" /etc/systemd/system/\$NEW_SERVICE.service
 
           # systemd 재로드 후 새로운 서비스 시작
           sudo systemctl daemon-reload
@@ -140,6 +141,7 @@ jobs:
           echo "Deployment successful! Traffic switched to port \$NEW_PORT"
 
           EOF
+
       # 실패시 이전 버전으로 롤백 가능하도록 하는것 
       - name: Rollback to Previous Version
         if: failure()
