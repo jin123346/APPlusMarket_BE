@@ -101,7 +101,7 @@ jobs:
           set -e
           
           # 현재 실행 중인 포트 확인
-          CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || echo "8082")
+          CURRENT_PORT=$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
           echo "Current running port is: \$CURRENT_PORT"
 
           # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
@@ -120,7 +120,8 @@ jobs:
           sudo systemctl stop \$NEW_SERVICE || true
 
           # 새로운 JAR 파일을 올바른 위치로 이동
-          mv /home/ec2-user/*.jar /home/ec2-user/Aplusmarket-\$NEW_PORT.jar
+          LATEST_JAR=$(ls -t /home/ec2-user/*.jar | head -n 1)
+          mv "$LATEST_JAR" "/home/ec2-user/Aplusmarket-$NEW_PORT.jar"
 
           # 서비스 파일 업데이트
           sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar -Dserver.port=\$NEW_PORT /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
