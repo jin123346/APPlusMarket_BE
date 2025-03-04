@@ -114,8 +114,15 @@
 
     <update id="updateStatus" parameterType="com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO">
         update tb_product
-        set status = #{status}
-        , updated_at = now()
+        set status = #{status},
+        updated_at = now()
+        <if test="status eq 'Deleted'"> ,deleted_at = now()</if>
+        where id = #{id}
+    </update>
+
+    <update id="updateHit" >
+        update tb_product
+        set hit = #{hit}
         where id = #{id}
     </update>
 

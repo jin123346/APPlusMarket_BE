@@ -38,6 +38,8 @@ public class ProductDTO { // 상품 상세 정보 출력 데이터
     private String location;
     private Long buyerId;
     private boolean isWished;
+    private int hit;
+    private int wishCount;
 
 
 }

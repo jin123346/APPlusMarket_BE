@@ -23,6 +23,12 @@
         WHERE user_id = #{userId} ;
     </select>
 
+    <select id="countWishList">
+        SELECT count(*)
+        from tb_wish_list
+        where product_id = #{productId}
+    </select>
+
 
 
 
