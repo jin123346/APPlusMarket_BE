@@ -2,6 +2,7 @@ package com.aplus.aplusmarket.controller.chat;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
+import com.aplus.aplusmarket.dto.chat.request.MarkReadDTO;
 import com.aplus.aplusmarket.service.ChatMessageService;
 import com.aplus.aplusmarket.service.ChatService;
 import jakarta.websocket.server.PathParam;
@@ -93,5 +94,16 @@ public class ChatController {
         log.info("이전 메시지 로딩: chatRoomId={}, beforeCreatedAt={}", chatRoomId, beforeCreatedAt);
 
         return chatMessageService.getPreviousMessagesByTime(chatRoomId, beforeCreatedAt);
+    }
+    /**
+     * 특정 채팅방의 특정 사용자에 대해 해당 시점 이전의 메시지를 읽음 처리
+
+     * @return ResponseDTO
+     */
+    @PostMapping("/markAsRead")
+    public ResponseDTO markMessagesAsRead(
+            MarkReadDTO markReadDTO) {
+
+        return chatMessageService.markMessagesAsRead(markReadDTO.getChatRoomId(), markReadDTO.getUserId(), markReadDTO.getTime());
     }
 }
