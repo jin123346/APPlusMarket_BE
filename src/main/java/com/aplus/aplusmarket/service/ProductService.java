@@ -123,7 +123,7 @@ public class ProductService {
             log.info(" 몇개의 productImage?? : {}",productImages);
 
             if (productImages == null) {
-                log.warn("⚠️ [WARNING] 상품 이미지가 없습니다. 빈 리스트로 대체합니다.");
+                log.warn("[WARNING] 상품 이미지가 없습니다. 빈 리스트로 대체합니다.");
                 productImages = new ArrayList<>();
             }
             log.info(" 몇개의 productImage?? : {}",productImages);
@@ -142,9 +142,9 @@ public class ProductService {
             // DTO에 이미지 리스트 추가
             productDTO.setImages(imageDTOs);
 
-                if(userId !=null){
-                    long wishListId = wishListMapper.selectWishList(product.getId(),userId);
-                    if(wishListId>0){
+                if(userId !=null && product.getId() != null){
+                    Optional<Long> opt = wishListMapper.selectWishList(product.getId(),userId);
+                    if(opt.isPresent()){
                         productDTO.setWished(true);
                     }
                 }
@@ -158,6 +158,19 @@ public class ProductService {
                 }
             }
             log.info("Selected Product with Images: " + productDTO);
+
+            //조회수 올리기
+
+            int newHit = product.getHit() + 1;
+            productDTO.setHit(newHit);
+            productMapper.updateHit(product.getId(), newHit);
+
+            //관심 갯수
+
+            int wishCount = wishListMapper.countWishList(product.getId());
+
+            productDTO.setWishCount(wishCount);
+
             return DataResponseDTO.of(productDTO, 2002, "상품 상세 정보 조회 성공");
         }catch (Exception e){
             log.error(e);
@@ -283,6 +296,7 @@ public class ProductService {
     //숨김처리 // 숨김해제
     public ResponseDTO updateStatus(Long productId,String status){
         try {
+
             int result = productMapper.updateStatus(productId,status);
 
             if(result != 1 ){
@@ -518,6 +532,7 @@ public class ProductService {
                 .brand(product.getBrand())
                 .buyerId(product.getBuyerId())
                 .isWished(product.isWished())
+                .hit(product.getHit())
                 .ProductImages(product.getImages().stream().map(Product_ImagesDTO::toDTO).toList())
                 .build();
     }

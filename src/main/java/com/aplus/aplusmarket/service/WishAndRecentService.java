@@ -46,10 +46,10 @@ public class WishAndRecentService {
     public ResponseDTO updateWishList(Long productId, Long userId){
         log.info("관심상품 처리 로직 시작");
         try{
-            long wishListId = wishListMapper.selectWishList(productId,userId);
+            Optional<Long> opt = wishListMapper.selectWishList(productId,userId);
             log.info("기존 관심상품 유무 체크 완료");
-            if(wishListId > 0){
-
+            if(opt.isPresent()){
+                Long wishListId = opt.get();
                 wishListMapper.deleteById(wishListId);
                 log.info("기존 관심상품 삭제 => 관심상품 해제 완료");
 
@@ -62,7 +62,7 @@ public class WishAndRecentService {
             if(result == 0 ){
               return    ErrorResponseDTO.of(2034,"관심상품 업데이트 처리가 안됨");
             }
-            return ResponseDTO.of("success",3032,"관심상품 업데이트 처리 완료");
+            return ResponseDTO.of("success",3035,"관심상품 업데이트 처리 완료");
         }catch (Exception e){
             return ErrorResponseDTO.of(2033,"관심상품 처리 중 에러 발생");
         }

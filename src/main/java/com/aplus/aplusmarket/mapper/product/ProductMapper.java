@@ -20,5 +20,6 @@ public interface ProductMapper {
     List<ProductResponseCard> selectProductByIdForCompleted(@Param("lastIndex") long lastIndex ,@Param("userId") long userId,@Param("status") String status );
     int updateReload(Long id);
     int updateStatus(@Param("id") Long id,@Param("status")  String status);
+    int updateHit(@Param("id") Long id,@Param("hit")  int hit);
 }
 

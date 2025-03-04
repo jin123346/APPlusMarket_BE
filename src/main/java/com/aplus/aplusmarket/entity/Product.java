@@ -35,6 +35,7 @@ public class Product {
     private List<Product_Images> images = new ArrayList<>();
     private boolean isWished;
 
+    private int hit; // 조회수
     //
     private String productImage;
 
