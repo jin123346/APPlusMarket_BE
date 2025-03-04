@@ -1,6 +1,8 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.documents.ChatMessage;
+import com.aplus.aplusmarket.dto.DataResponseDTO;
+import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class ChatMessageService {
 
        ChatMessage message =  messageDTO.toDocument(messageDTO);
        message.setCreatedAt(LocalDateTime.now());
-        return chatMessageRepository.save(message);
+       return chatMessageRepository.save(message);
     }
 
     /** 최근 메시지 30개 조회
@@ -48,6 +50,32 @@ public class ChatMessageService {
                 .orElseThrow(() -> new RuntimeException("RecentMessage Not Found"));
     }
 
+    /** 메시지 수정
+     * @param messageDTO
+     * @return ChatMessage
+     */
+    public ChatMessage updateAppointment(ChatMessageDTO messageDTO) {
+
+        ChatMessage message =  messageDTO.toDocument(messageDTO);
+        message.setCreatedAt(LocalDateTime.now());
+        return chatMessageRepository.save(message);
+    }
+
+    /**
+     * 이전 메시지 조회
+     * @param chatRoomId
+     * @param lastCreatedAt
+     * @return
+     */
+    public ResponseDTO getPreviousMessagesByTime(int chatRoomId, LocalDateTime lastCreatedAt) {
+        List<ChatMessage> messages = chatMessageRepository
+                .findTop30ByChatRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(chatRoomId, lastCreatedAt);
+        List<ChatMessageDTO> result = messages.stream()
+                .map(message -> message.toDTO(message))
+                .collect(Collectors.toList());
+        // DTO로 변환하여 반환
+        return DataResponseDTO.success(result,4000);
+    }
 }
 
 
