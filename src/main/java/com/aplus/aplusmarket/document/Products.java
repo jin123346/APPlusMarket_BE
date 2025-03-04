@@ -18,6 +18,7 @@ public class Products {
     private String id;
 
     private Brand brand;
+    private String goodsId;
     private Category category;
     private String name;
     private String productCode;

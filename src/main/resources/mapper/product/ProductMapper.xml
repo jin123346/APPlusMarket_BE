@@ -12,12 +12,19 @@
     </insert>
 
     <!-- SELECT BY ID 상품 아이디를 통해 상품 상세 정보와 판매자 닉네임을 가지고 옵니다-->
-    <select id="SelectProductById" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product">
+    <select id="SelectProductById" resultType="com.aplus.aplusmarket.entity.Product">
         <!-- SELECT * FROM tb_product WHERE id = #{id} -->
-        SELECT p.*, u.nickname FROM tb_product AS p
+        SELECT p.*, u.nickname,
+               CASE WHEN w.id IS NOT NULL
+                   then true
+                   Else False
+                   End as isWished
+               FROM tb_product AS p
             LEFT JOIN tb_user u ON p.seller_id = u.id
+            <if test="userId != null ">
+                LEFT JOIN tb_wish_list  w ON (p.id = w.product_id AND w.user_id = #{userId})
+            </if>
              WHERE p.id = #{id}
-
     </select>
 
     <select id="SelectProductByIdForModify" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product" >
@@ -167,8 +174,31 @@
         FROM tb_product p
                  LEFT JOIN tb_product_image img
                            ON p.id = img.product_id AND img.sequence = 0
+        WHERE p.status = 'Active'
+        <if test="lastIndex != null and lastIndex != '' and lastIndex != 0">
+            And p.id &lt; #{lastIndex}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (p.title  LIKE CONCAT('%', #{keyword}, '%') OR p.product_name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="brand != null and brand != ''">
+            AND (p.brand = #{brand})
+        </if>
         ORDER BY p.reload_at DESC
+            LIMIT #{pageSize}
+    </select>
 
-            LIMIT #{pageSize} OFFSET #{offset}
+    <select id="countProductsForState" resultType="Long">
+        SELECT
+            COUNT(p.id)
+        FROM tb_product p
+        WHERE p.status = #{status}
+        <if test="keyword != null and keyword != ''">
+            AND (p.title LIKE CONCAT('%', #{keyword}, '%') OR p.product_name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="brand != null and brand != ''">
+            AND (p.brand = #{brand})
+        </if>
+        ORDER BY p.reload_at DESC
     </select>
 </mapper>

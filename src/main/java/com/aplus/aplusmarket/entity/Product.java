@@ -33,5 +33,9 @@ public class Product {
     private String findProductId;
     private Long buyerId;
     private List<Product_Images> images = new ArrayList<>();
+    private boolean isWished;
+
+    //
+    private String productImage;
 
 }

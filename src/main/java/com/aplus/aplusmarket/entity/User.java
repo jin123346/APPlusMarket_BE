@@ -3,17 +3,17 @@ package com.aplus.aplusmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.apache.ibatis.type.Alias;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@ToString
-@Builder
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
+@Alias("User")
 public class User {
     private long id;
     private String uid;

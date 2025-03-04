@@ -9,6 +9,7 @@ import com.aplus.aplusmarket.entity.User;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import com.aplus.aplusmarket.service.AuthService;
 import com.aplus.aplusmarket.service.UserService;
+import com.aplus.aplusmarket.service.WishAndRecentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jdk.jshell.Snippet;
@@ -51,7 +52,7 @@ public class AuthController {
     public ResponseEntity<?> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken,
                                     @RequestParam(value = "userId", required = false, defaultValue = "0") Long userId,
                                     HttpServletResponse response) {
-        // ✅ Refresh Token 삭제를 위한 빈 쿠키 설정
+        // Refresh Token 삭제를 위한 빈 쿠키 설정
 
         log.info("logout Token!!"+refreshToken);
 
@@ -78,21 +79,20 @@ public class AuthController {
         }
         ResponseDTO responseDTO = authService.refreshToken(refreshToken,resp);
 
-        // ✅ 실패 응답인 경우
+        // 실패 응답인 경우
         if (responseDTO instanceof ErrorResponseDTO) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
         }
 
-        // ✅ 성공 응답인 경우 (새 Access Token 포함)
+        // 성공 응답인 경우 (새 Access Token 포함)
         if (responseDTO instanceof DataResponseDTO) {
             DataResponseDTO dataResponseDTO = (DataResponseDTO) responseDTO;
-
-            // ✅ 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
+            // 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
             return ResponseEntity.ok()
                     .body(dataResponseDTO);
         }
 
-        // ✅ 예외 상황 (이론적으로 발생하지 않지만, 예외 처리를 위해 추가)
+        // 예외 상황 (이론적으로 발생하지 않지만, 예외 처리를 위해 추가)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.of(1007, "알 수 없는 오류가 발생했습니다."));
 
@@ -101,11 +101,14 @@ public class AuthController {
 
     //나의 정보 기능
     @GetMapping("/myInfo")
-    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken") String refreshToken){
+    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken",required = false) String refreshToken){
         Long id =(Long)request.getAttribute("id");
-        log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
         String uid="";
         ResponseDTO responseDTO;
+        if(refreshToken == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseDTO.of("failed",401,"로그인이 필요합니다."));
+        }
+        log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
         if(id == null || id == 0){
              uid = authService.getIdWithRefreshToken(refreshToken);
             if(uid==null) {

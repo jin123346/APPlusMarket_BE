@@ -1,12 +1,13 @@
 package com.aplus.aplusmarket.dto.auth.requset;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoginRequest {
     private String uid;
     private String password;
     private String deviceInfo;
+    private String tempUserId;
 }

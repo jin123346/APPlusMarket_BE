@@ -30,16 +30,25 @@ spring:
         multipart:
             enabled: true
             location: uploads/
+
     data:
         mongodb:
             uri: mongodb://root:Qwe1234~!@43.202.32.28:27017/applus?authSource=admin
+        redis:
+            host: 43.202.32.28
+            port: 6379
+            repositories:
+                enabled: true
+            lettuce:
+                pool:
+                    max-wait: 5000ms
 
 mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
     config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)
-    type-aliases-package: com.aplus.aplusmarket.entity # TypeAlias 사용할 패키지 경로
+    type-aliases-package: com.aplus.aplusmarket.entity,  com.aplus.aplusmarket.dto # TypeAlias 사용할 패키지 경로
 server:
-    port: 8080
+    port:  ${SERVER_PORT:8080}
     servlet:
         context-path: /
     address: 0.0.0.0

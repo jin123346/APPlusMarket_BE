@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aplus.aplusmarket.mapper.product.WishListMapper">
+    <select id="selectWishList" resultType="Long">
+        select id
+        from tb_wish_list
+        WHERE product_id = #{productId}
+          AND user_id = #{userId}
+    </select>
+    <insert id="insertWishList" parameterType="com.aplus.aplusmarket.entity.WishList">
+        insert into tb_wish_list (user_id, product_id)
+        values (#{userId},#{productId})
+    </insert>
+    <delete id="deleteById">
+        delete from tb_wish_list where id = #{id}
+    </delete>
+
+    <select id="productWishList" resultType="com.aplus.aplusmarket.entity.Product">
+        SELECT p.price,p.title,p.id ,i.uuid_name AS product_image
+        FROM tb_wish_list w
+                 JOIN tb_product AS p ON p.id = w.product_id
+                 LEFT JOIN tb_product_image AS i ON p.id = i.product_id AND i.sequence =0
+        WHERE user_id = #{userId} ;
+    </select>
+
+
+
+
+</mapper>
