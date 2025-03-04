@@ -150,7 +150,6 @@ public class ChatService {
         }
     }
 
-
     // insert
 
     /** 채팅방 생성
@@ -184,5 +183,36 @@ public class ChatService {
             return ErrorResponseDTO.of(5000,"채팅방 생성 중 오류가 발생하였습니다.");
         }
     }
+
+    // update
+
+    // update
+    @Transactional
+    public ResponseDTO updateAppointment(ChatMessageDTO chatMessage) {
+        try {
+            // 메시지 Id check
+            if (chatMessage.getMessageId() == null || chatMessage.getMessageId().isEmpty()) {
+                return ErrorResponseDTO.of(4001, "메시지 ID는 필수입니다.");
+            }
+
+           ChatMessage updatedMessage = chatMessageService.updateAppointment(chatMessage);
+
+            if (updatedMessage != null) {
+                return ResponseDTO.builder()
+                        .status("success")
+                        .code(4000)
+                        .message("Appointment 업데이트 성공")
+                        .build();
+            } else {
+                return ErrorResponseDTO.of(4002, "업데이트할 데이터가 없습니다.");
+            }
+
+        } catch (Exception e) {
+            log.error("updateAppointment 오류: ", e);
+            return ErrorResponseDTO.of(5000, "서버 오류가 발생했습니다.");
+        }
+    }
+
+
 }
 

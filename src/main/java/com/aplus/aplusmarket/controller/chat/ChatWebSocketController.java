@@ -40,15 +40,20 @@ public class ChatWebSocketController {
     // 클라이언트가 /pub/chat/message로 전송하면 이 메서드가 처리됨
 
     /** 메시지 저장 후 웹소켓 방송
-     * @param chatMessage
+     * @param chatMessageDTO
      * @return ResponseDTO
      */
     @Transactional
     @MessageMapping("/chat/message")
-    public ResponseDTO sendMessage(ChatMessageDTO chatMessage) {
-        log.info("💻 메시지 저장 전 입력 값" +  chatMessage);
-        ChatMessage result = chatMessageService.insertChatMessage(chatMessage);
-        messagingTemplate.convertAndSend("/sub/chatroom/" + result.getChatRoomId(), result.toDTO(result));
+    public ResponseDTO sendMessage(ChatMessageDTO chatMessageDTO) {
+
+        log.info("💻 메시지 저장 전 입력 값" +  chatMessageDTO);
+        ChatMessage result = chatMessageService.insertChatMessage(chatMessageDTO);
+
+        chatMessageDTO.setMessageId(result.get_id());
+        chatMessageDTO.setCreatedAt(result.getCreatedAt());
+
+        messagingTemplate.convertAndSend("/sub/chatroom/" + result.getChatRoomId(), chatMessageDTO);
         log.info("💻 웹소켓 메시지 저장 후 전송 "+ result);
         return ResponseDTO.of("success", 4000, "Message broadcasted successfully");
     }

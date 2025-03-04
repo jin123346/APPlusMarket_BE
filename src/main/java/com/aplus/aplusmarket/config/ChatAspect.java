@@ -25,7 +25,7 @@ public class ChatAspect {
                 if (data instanceof ChatRoomCreateDTO) {
                     String destination = "/sub/user/" + ((ChatRoomCreateDTO) data).getUserId();
                     messagingTemplate.convertAndSend(destination, data);
-                    System.out.println("Aspect: 웹소켓 메시지 전송 완료 - " + destination);
+                    System.out.println("Aspect: 웹소켓 메시지 전송 완료 - " + destination + data);
                 }
             }
         }

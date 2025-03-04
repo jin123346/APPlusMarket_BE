@@ -1,12 +1,17 @@
 package com.aplus.aplusmarket.controller.chat;
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
 import com.aplus.aplusmarket.service.ChatMessageService;
 import com.aplus.aplusmarket.service.ChatService;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 
 /*
@@ -35,6 +40,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final SimpMessagingTemplate template;
+    private final ChatMessageService chatMessageService;
 
     /** 채팅방 목록 조회
      * @param userId
@@ -72,5 +78,20 @@ public class ChatController {
         return chatService.insertChatRoom(chatRoom);
     }
 
+    @PutMapping("/{chatRoomId}/messages/{messageId}")
+    public ResponseDTO updateAppointment(@PathParam("chatRoomId") Integer chatRoomId,
+                                         @PathParam("messageId") String messageId,
+                                        @RequestBody ChatMessageDTO chatMessage){
+        return chatService.updateAppointment(chatMessage);
+    }
+    // ✅ lastCreatedAt 기준으로 이전 메시지 가져오기
+    @GetMapping("/{chatRoomId}/messages")
+    public ResponseDTO getPreviousMessagesByTime(
+            @PathVariable("chatRoomId") int chatRoomId,
+            @RequestParam("beforeCreatedAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime beforeCreatedAt) {
 
+        log.info("이전 메시지 로딩: chatRoomId={}, beforeCreatedAt={}", chatRoomId, beforeCreatedAt);
+
+        return chatMessageService.getPreviousMessagesByTime(chatRoomId, beforeCreatedAt);
+    }
 }
