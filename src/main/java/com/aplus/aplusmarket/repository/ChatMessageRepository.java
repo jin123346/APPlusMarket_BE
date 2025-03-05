@@ -33,6 +33,5 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage,Strin
             int chatRoomId, LocalDateTime createdAt
     );
 
-    @Query("{'chatRoomId': ?0, 'userId': {$ne: ?1}, 'createdAt': {$lte: ?2}}")
-    List<ChatMessage> findUnreadMessages(int chatRoomId, int userId, LocalDateTime timestamp);
+    int countByIsReadFalseAndChatRoomIdAndUserIdNot(int chatRoomId, int userId);
 }

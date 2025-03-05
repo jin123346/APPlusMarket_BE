@@ -10,6 +10,7 @@ import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
 import com.aplus.aplusmarket.dto.chat.response.*;
 import com.aplus.aplusmarket.mapper.chat.ChatMapper;
+import com.aplus.aplusmarket.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class ChatService {
 
     private final ChatMapper chatMapper;
     private final ChatMessageService chatMessageService;
+    private final ChatMessageRepository chatMessageRepository;
 
     /** 채팅방 목록 조회
      * @param userId
@@ -67,6 +69,7 @@ public class ChatService {
                     // 최신 메시지 존재 시 필드 업데이트 및 리스트 추가
                     chatRoom.setRecentMessage(chatMessage.getContent());
                     chatRoom.setMessageCreatedAt(chatMessage.getCreatedAt().toString());
+                    chatRoom.setUnRead(countUnreadMessage(chatMessage.getChatRoomId(),userId));
                     filteredChatRooms.add(chatRoom);
                 } catch (Exception e) {
                     // 최신 메시지가 없어서 예외 발생 시, 해당 채팅방은 건너뜁니다.
@@ -213,6 +216,8 @@ public class ChatService {
         }
     }
 
-
+    public int countUnreadMessage(int chatRoomId, int userId) {
+        return chatMessageRepository.countByIsReadFalseAndChatRoomIdAndUserIdNot(chatRoomId, userId);
+    }
 }
 

@@ -17,5 +17,5 @@ public class ChatMessage {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
-    private Boolean isRead;
+    private Boolean isRead = false;
 }

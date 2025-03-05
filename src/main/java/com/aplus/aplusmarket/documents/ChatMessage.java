@@ -52,6 +52,7 @@ public class ChatMessage {
                 .reminderBefore(chatMessage.getReminderBefore())
                 .locationDescription(chatMessage.getLocationDescription())
                 .createdAt(chatMessage.getCreatedAt())
+                .isRead(chatMessage.getIsRead())
                 .build();
     }
 }

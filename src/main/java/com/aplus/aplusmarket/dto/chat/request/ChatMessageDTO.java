@@ -34,6 +34,7 @@ public class ChatMessageDTO {
     private LocalDateTime createdAt;
 
     private Boolean isFirst;
+    private Boolean isRead;
     // 저장된 후 createdAt을 사용하려면 select 한번 더 해야함
     // 그래서 java 단에서 now()로 현재 시간 set 후 데이터 삽입
 
@@ -49,6 +50,7 @@ public class ChatMessageDTO {
                 .reminderBefore(dto.getReminderBefore())
                 .locationDescription(dto.getLocationDescription())
                 .createdAt(dto.getCreatedAt())
+                .isRead(dto.getIsRead())
                 .build();
 
     }
