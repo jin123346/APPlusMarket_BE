@@ -101,8 +101,11 @@ jobs:
           set -e
           
           # 현재 실행 중인 포트 확인
-          CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
+          CURRENT_PORT=\$(sudo lsof -i :8081 -t || sudo lsof -i :8082 -t)
           echo "Current running port is: \$CURRENT_PORT"
+
+          # CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
+          # echo "Current running port is: \$CURRENT_PORT"
 
           # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
           if [ "\$CURRENT_PORT" == "8081" ]; then
@@ -121,26 +124,45 @@ jobs:
 
           # 최신 JAR 파일 찾기 및 이름 변경
           LATEST_JAR=\$(ls -t /home/ec2-user/*.jar | head -n 1)
-          mv "\$LATEST_JAR" "/home/ec2-user/Aplusmarket-\$NEW_PORT.jar"
+          NEW_JAR_NAME="/home/ec2-user/Aplusmarket-\$NEW_PORT.jar"
+          mv "\$LATEST_JAR" "\$NEW_JAR_NAME"
+          
+          # LATEST_JAR=\$(ls -t /home/ec2-user/*.jar | head -n 1)
+          # mv "\$LATEST_JAR" "/home/ec2-user/Aplusmarket-\$NEW_PORT.jar"
 
-          # 환경 변수 기반 서비스 업데이트
-          sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
+
+          # systemd 서비스 업데이트
+          sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar \$NEW_JAR_NAME|" /etc/systemd/system/\$NEW_SERVICE.service
           sudo sed -i "s|Environment=.*|Environment=\"SERVER_PORT=\$NEW_PORT\"|" /etc/systemd/system/\$NEW_SERVICE.service
+          # # 환경 변수 기반 서비스 업데이트
+          # sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
+          # sudo sed -i "s|Environment=.*|Environment=\"SERVER_PORT=\$NEW_PORT\"|" /etc/systemd/system/\$NEW_SERVICE.service
 
           # systemd 재로드 후 새로운 서비스 시작
           sudo systemctl daemon-reload
           sudo systemctl start \$NEW_SERVICE
           sleep 10
+
+          # 애플리케이션 상태 확인 (최대 30번 반복, 5초 간격)
+          echo "Waiting for new application to start..."
+          for i in {1..30}; do
+            if curl -s http://127.0.0.1:\$NEW_PORT/actuator/health | grep -q 'UP'; then
+              echo "Application started successfully!"
+              break
+            fi
+            echo "Waiting for application to be ready... ($i/30)"
+            sleep 5
+          done
           
-          # 애플리케이션 실행 확인
-          if ! curl -s http://127.0.0.1:\$NEW_PORT/actuator/health | grep -q 'UP'; then
-              echo "New application failed to start!"
-              exit 1
-          fi
 
+          # Nginx 업데이트 및 reload
+          sed -i "s|proxy_pass http://.*|proxy_pass http://127.0.0.1:\$NEW_PORT;|" /etc/nginx/nginx.conf
+          sudo nginx -s reload
+          
           echo "Deployment successful! Traffic switched to port \$NEW_PORT"
-
           EOF
+
+      
 
       # 실패시 이전 버전으로 롤백 가능하도록 하는것 
       - name: Rollback to Previous Version
