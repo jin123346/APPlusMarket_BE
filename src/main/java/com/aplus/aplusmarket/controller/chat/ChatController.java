@@ -102,8 +102,8 @@ public class ChatController {
      */
     @PostMapping("/markAsRead")
     public ResponseDTO markMessagesAsRead(
-            MarkReadDTO markReadDTO) {
+           @RequestBody MarkReadDTO markReadDTO) {
 
-        return chatMessageService.markMessagesAsRead(markReadDTO.getChatRoomId(), markReadDTO.getUserId(), markReadDTO.getTime());
+        return chatMessageService.markMessagesAsRead(markReadDTO);
     }
 }

@@ -4,6 +4,7 @@ import com.aplus.aplusmarket.documents.ChatMessage;
 import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
+import com.aplus.aplusmarket.dto.chat.request.MarkReadDTO;
 import com.aplus.aplusmarket.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -15,7 +16,9 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,40 +87,38 @@ public class ChatMessageService {
         return DataResponseDTO.success(result,4000);
     }
 
-    /**
-     * 특정 채팅방에서 특정 사용자의 해당 시점 이전의 메시지를 읽음 처리
-     * @param chatRoomId
-     * @param userId
-     * @param timestamp
-     * @return ResponseDTO
-     */
-    /**
      /**
      * ✅ 특정 채팅방에서 userId가 아닌 사용자가 보낸, 특정 시점 이전의 메시지를 읽음 처리 (isRead = true)
-     * @param chatRoomId 채팅방 ID
-     * @param userId 현재 사용자의 ID
-     * @param timestamp 사용자가 채팅방에 들어간 시점
+     * @param markReadDTO
      * @return 업데이트된 메시지 개수
      */
-    public ResponseDTO markMessagesAsRead(int chatRoomId, int userId, LocalDateTime timestamp) {
-        try {
-            // ✅ Query 생성 (빌더 패턴 사용)
-            Query query = Query.query(Criteria.where("chatRoomId").is(chatRoomId)
-                    .and("userId").ne(userId)  // 내가 보낸 메시지는 제외
-                    .and("createdAt").lte(timestamp)); // timestamp 이전 메시지
 
-            // ✅ Update 문서 설정
+
+    public ResponseDTO markMessagesAsRead(MarkReadDTO markReadDTO) {
+
+        LocalDateTime timeStamp = markReadDTO.getTime();
+        try {
+
+
+            // ✅ LocalDateTime을 Instant로 변환하여 MongoDB의 ISODate와 비교 가능하게 설정
+            Instant timestampInstant = timeStamp.toInstant(ZoneOffset.UTC);
+
+            Query query = Query.query(Criteria.where("chatRoomId").is(markReadDTO.getChatRoomId())
+                    .and("userId").ne(markReadDTO.getUserId())
+                    .and("createdAt").lte(timestampInstant)); // ✅ 변환된 timestamp 사용
+
             Update update = new Update().set("isRead", true);
 
-            // ✅ MongoDB에서 다중 업데이트 실행
+            log.info("🔍 실행할 쿼리: {}", query.toString());
+
             var updateResult = mongoTemplate.updateMulti(query, update, ChatMessage.class);
 
-            log.info("읽음 처리 갯수"+updateResult);
+            log.info("✅ 읽음 처리 완료: {}개의 메시지", updateResult.getModifiedCount());
+
             return ResponseDTO.of("success", 4000, "업데이트 완료");
-            // 업데이트된 메시지 개수 반환
         } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseDTO.of("fail", 4004, "에러 발생"); // 실패 시 0 반환
+            log.error("❌ MongoDB 읽음 처리 오류: {}", e.getMessage());
+            return ResponseDTO.of("fail", 4004, "에러 발생");
         }
     }
 }
