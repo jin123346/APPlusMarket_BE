@@ -43,7 +43,8 @@ public class ChatMessage {
     public ChatMessageDTO toDTO(ChatMessage chatMessage){
         return ChatMessageDTO.builder()
                 .chatRoomId(chatMessage.getChatRoomId())
-                .senderId(chatMessage.getUserId())
+                .messageId(chatMessage._id)
+                .userId(chatMessage.getUserId())
                 .content(chatMessage.getContent())
                 .date(chatMessage.getDate())
                 .time(chatMessage.getTime())
@@ -51,6 +52,7 @@ public class ChatMessage {
                 .reminderBefore(chatMessage.getReminderBefore())
                 .locationDescription(chatMessage.getLocationDescription())
                 .createdAt(chatMessage.getCreatedAt())
+                .isRead(chatMessage.getIsRead())
                 .build();
     }
 }

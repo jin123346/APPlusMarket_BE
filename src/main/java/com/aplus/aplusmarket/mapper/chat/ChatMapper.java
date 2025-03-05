@@ -144,14 +144,8 @@ public interface ChatMapper {
     """)
     void insertChatMapping(int chatRoomId, int userId);
 
-    /** 메시지 삽입
-     * @param chatMessageDTO
-     * @return chatMessageId
-     */
-    @Insert("INSERT INTO tb_chat_message (chat_room_id, content, user_id, created_at) " +
-            "VALUES (#{chatRoomId}, #{content}, #{senderId}, #{createdAt}) ")
-    @Options(useGeneratedKeys = true, keyProperty = "chatMessageId")
-    int insertMessage(ChatMessageDTO chatMessageDTO);
+
+
 
 
 }
