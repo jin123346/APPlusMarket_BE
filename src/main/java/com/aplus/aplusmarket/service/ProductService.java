@@ -168,7 +168,7 @@ public class ProductService {
             //관심 갯수
 
             int wishCount = wishListMapper.countWishList(product.getId());
-
+            log.info("좋아요 갯수 : {}",wishCount);
             productDTO.setWishCount(wishCount);
 
             return DataResponseDTO.of(productDTO, 2002, "상품 상세 정보 조회 성공");
