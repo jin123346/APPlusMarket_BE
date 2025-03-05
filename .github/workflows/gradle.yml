@@ -110,9 +110,10 @@ jobs:
               echo "ERROR: Both services are inactive! Defaulting to 8081."
               CURRENT_PORT=8081
           fi
+          
 
           # CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
-          # echo "Current running port is: \$CURRENT_PORT"
+          echo "Current running port is: \$CURRENT_PORT"
 
           # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
           if [ "\$CURRENT_PORT" == "8081" ]; then
