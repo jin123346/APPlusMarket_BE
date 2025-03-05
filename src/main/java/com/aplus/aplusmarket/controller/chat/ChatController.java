@@ -1,4 +1,5 @@
 package com.aplus.aplusmarket.controller.chat;
+import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
@@ -40,8 +41,9 @@ import java.time.LocalDateTime;
 public class ChatController {
 
     private final ChatService chatService;
-    private final SimpMessagingTemplate template;
     private final ChatMessageService chatMessageService;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     /** 채팅방 목록 조회
      * @param userId
@@ -83,15 +85,25 @@ public class ChatController {
     public ResponseDTO updateAppointment(@PathParam("chatRoomId") Integer chatRoomId,
                                          @PathParam("messageId") String messageId,
                                         @RequestBody ChatMessageDTO chatMessage){
-        return chatService.updateAppointment(chatMessage);
+
+        try {
+
+        ResponseDTO resultDTO = chatService.updateAppointment(chatMessage);
+        messagingTemplate.convertAndSend("/sub/chatroom/" + chatRoomId, chatMessage);
+
+        return resultDTO;
+        } catch (Exception e){
+            log.error(e);
+            return ErrorResponseDTO.of(4004, "수정 중 방송 실패");
+        }
     }
+
     // ✅ lastCreatedAt 기준으로 이전 메시지 가져오기
     @GetMapping("/{chatRoomId}/messages")
     public ResponseDTO getPreviousMessagesByTime(
             @PathVariable("chatRoomId") int chatRoomId,
             @RequestParam("beforeCreatedAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime beforeCreatedAt) {
 
-        log.info("이전 메시지 로딩: chatRoomId={}, beforeCreatedAt={}", chatRoomId, beforeCreatedAt);
 
         return chatMessageService.getPreviousMessagesByTime(chatRoomId, beforeCreatedAt);
     }
