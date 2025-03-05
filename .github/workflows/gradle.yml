@@ -99,13 +99,20 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} << EOF
           set -e
-          
-          # 현재 실행 중인 포트 확인
-          # CURRENT_PORT=\$(sudo lsof -i :8081 -t || sudo lsof -i :8082 -t)
-          # echo "Current running port is: \$CURRENT_PORT"
+                  
 
-          CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
-          echo "Current running port is: \$CURRENT_PORT"
+          # 현재 실행 중인 포트 확인
+          if sudo systemctl is-active --quiet my-spring-app-1; then
+              CURRENT_PORT=8081
+          elif sudo systemctl is-active --quiet my-spring-app-2; then
+              CURRENT_PORT=8082
+          else
+              echo "ERROR: Both services are inactive! Defaulting to 8081."
+              CURRENT_PORT=8081
+          fi
+
+          # CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
+          # echo "Current running port is: \$CURRENT_PORT"
 
           # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
           if [ "\$CURRENT_PORT" == "8081" ]; then
