@@ -156,6 +156,7 @@ jobs:
           
 
           # Nginx 업데이트 및 reload
+          echo "New application port: \$NEW_PORT"
           sudo sed -i "s|proxy_pass http://.*|proxy_pass http://127.0.0.1:$NEW_PORT;|" /etc/nginx/nginx.conf
           sudo nginx -s reload
           
