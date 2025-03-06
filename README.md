@@ -93,7 +93,7 @@ Name	Role	GitHub
 
 > 마이페이지화면
 
-![image](https://github.com/user-attachments/assets/4629a8d1-a603-4297-b894-daab5275c662)
+![마이페이지](https://github.com/user-attachments/assets/c5b88f1a-f627-499f-8469-0079ebedaac2)
 ![image](https://github.com/user-attachments/assets/b907027d-125a-451e-be36-e132f49fc2c6)
 ![image](https://github.com/user-attachments/assets/196116f3-5711-491c-bc79-798f2d38b604)
 
