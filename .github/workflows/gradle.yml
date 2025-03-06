@@ -173,9 +173,9 @@ jobs:
 
           # 기존 서비스 종료 (새로운 서비스가 정상 실행된 후)
            if [ "\$NEW_PORT" == "8081" ]; then
-             sudo systemctl stop my-spring-app-2 || true
+             sudo systemctl stop my-spring-app-2.service || true
           else
-             sudo systemctl stop my-spring-app-1 || true
+             sudo systemctl stop my-spring-app-1.service || true
           fi
           # echo "Stopping old service: \$OLD_SERVICE"
           # sudo systemctl stop \$OLD_SERVICE || true
