@@ -169,7 +169,7 @@ jobs:
           sudo nginx -s reload
           
           echo "Deployment successful! Traffic switched to port \$NEW_PORT"
-          EOF
+        
 
           # 기존 서비스 종료 (새로운 서비스가 정상 실행된 후)
            if [ "\$NEW_PORT" == "8081" ]; then
