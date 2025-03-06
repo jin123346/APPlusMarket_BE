@@ -84,6 +84,7 @@ Name	Role	GitHub
  ![image](https://github.com/user-attachments/assets/1cbfe47d-b420-446d-b752-19bb3dd147ef)
 
 > 상품 화면
+![상품_깃허브](https://github.com/user-attachments/assets/3264bcfb-e2c4-4293-b908-114fd3a3eebc)
 
 
 ![image](https://github.com/user-attachments/assets/f6cd84a0-333b-4f62-bf28-c15d1b990804)
