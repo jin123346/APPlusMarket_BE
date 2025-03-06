@@ -172,8 +172,14 @@ jobs:
           EOF
 
           # 기존 서비스 종료 (새로운 서비스가 정상 실행된 후)
-          echo "Stopping old service: $OLD_SERVICE"
-          sudo systemctl stop $OLD_SERVICE || true
+          if [ -n "$OLD_SERVICE" ]; then
+              echo "Stopping old service: $OLD_SERVICE"
+              sudo systemctl stop $OLD_SERVICE || true
+          else
+              echo "No old service to stop."
+          fi
+          # echo "Stopping old service: \$OLD_SERVICE"
+          # sudo systemctl stop \$OLD_SERVICE || true
           
           echo "Deployment successful! Traffic switched to port \$NEW_PORT"
           EOF
