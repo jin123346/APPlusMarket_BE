@@ -154,7 +154,7 @@ jobs:
           # 애플리케이션 상태 확인 (최대 30번 반복, 5초 간격)
           echo "Waiting for new application to start..."
           for i in {1..30}; do
-            if curl -s http://127.0.0.1:$NEW_PORT/actuator/health | grep -q 'UP'; then
+            if curl -s http://127.0.0.1:\$NEW_PORT/actuator/health | grep -q 'UP'; then
               echo "Application started successfully!"
               SUCCESS=true
               break
@@ -165,23 +165,23 @@ jobs:
           
           # DOWN 상태 처리
           if [ -z "$SUCCESS" ]; then
-            echo "ERROR: New application failed to start on port $NEW_PORT"
+            echo "ERROR: New application failed to start on port \$NEW_PORT"
             
             # 롤백 로직 (이전 버전으로 트래픽 재전환)
             # DOWN 상태 처리
           if [ -z "$SUCCESS" ]; then
-            echo "ERROR: New application failed to start on port $NEW_PORT"
+            echo "ERROR: New application failed to start on port \$NEW_PORT"
             
             # 롤백 로직 (이전 버전으로 트래픽 재전환)
-            echo "Rolling back to previous version running on port $CURRENT_PORT..."
-            sudo sed -i "s|proxy_pass http://.*|proxy_pass http://127.0.0.1:$CURRENT_PORT;|" /etc/nginx/nginx.conf
+            echo "Rolling back to previous version running on port \$CURRENT_PORT..."
+            sudo sed -i "s|proxy_pass http://.*|proxy_pass http://127.0.0.1:\$CURRENT_PORT;|" /etc/nginx/nginx.conf
             sudo nginx -s reload
 
-            echo "Stopping failed new application: $NEW_SERVICE"
-            sudo systemctl stop $NEW_SERVICE || true
+            echo "Stopping failed new application: \$NEW_SERVICE"
+            sudo systemctl stop \$NEW_SERVICE || true
 
-            echo "Deployment failed. Rolled back to previous version on port $CURRENT_PORT."
-            exit 1  # GitHub Actions에서 실패로 감지하도록 exit 1 추가
+            echo "Deployment failed. Rolled back to previous version on port \$CURRENT_PORT."
+            exit 1  
           fi
 
 
