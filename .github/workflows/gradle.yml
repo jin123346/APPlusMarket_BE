@@ -102,18 +102,28 @@ jobs:
                   
 
           # 현재 실행 중인 포트 확인
-          if sudo systemctl is-active --quiet my-spring-app-1; then
+          CURRENT_PORT=""
+          if sudo ss -tulnp | grep -q ":8081 "; then
               CURRENT_PORT=8081
-          elif sudo systemctl is-active --quiet my-spring-app-2; then
+          elif sudo ss -tulnp | grep -q ":8082 "; then
               CURRENT_PORT=8082
           else
-              echo "ERROR: Both services are inactive! Defaulting to 8081."
-              CURRENT_PORT=8081
+              echo "ERROR: No active service detected. Starting with 8081."
+              CURRENT_PORT=8081  # 첫 배포 시 8081에서 실행
           fi
+
+          echo "=== DEBUG: Current running port is: $CURRENT_PORT ==="
+          # if sudo systemctl is-active --quiet my-spring-app-1; then
+          #     CURRENT_PORT=8081
+          # elif sudo systemctl is-active --quiet my-spring-app-2; then
+          #     CURRENT_PORT=8082
+          # else
+          #     echo "ERROR: Both services are inactive! Defaulting to 8081."
+          #     CURRENT_PORT=8081
+          # fi
           
 
           # CURRENT_PORT=\$(sudo systemctl is-active my-spring-app-1 && echo "8081" || (sudo systemctl is-active my-spring-app-2 && echo "8082"))
-          echo "Current running port is: \$CURRENT_PORT"
 
           # 현재 실행 중인 포트가 8081이면, 새 JAR을 8082에서 실행, 반대의 경우 8081에서 실행
           if [ "\$CURRENT_PORT" == "8081" ]; then
@@ -142,10 +152,7 @@ jobs:
           # systemd 서비스 업데이트
           sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar \$NEW_JAR_NAME|" /etc/systemd/system/\$NEW_SERVICE.service
           sudo sed -i "s|Environment=.*|Environment=\"SERVER_PORT=\$NEW_PORT\"|" /etc/systemd/system/\$NEW_SERVICE.service
-          # # 환경 변수 기반 서비스 업데이트
-          # sudo sed -i "s|ExecStart=.*|ExecStart=/usr/bin/java -jar /home/ec2-user/Aplusmarket-\$NEW_PORT.jar|" /etc/systemd/system/\$NEW_SERVICE.service
-          # sudo sed -i "s|Environment=.*|Environment=\"SERVER_PORT=\$NEW_PORT\"|" /etc/systemd/system/\$NEW_SERVICE.service
-
+        
           # systemd 재로드 후 새로운 서비스 시작
           sudo systemctl daemon-reload
           sudo systemctl start \$NEW_SERVICE
