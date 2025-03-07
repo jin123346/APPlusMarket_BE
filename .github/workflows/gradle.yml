@@ -159,7 +159,7 @@ jobs:
               SUCCESS=true
               break
             fi
-            echo "⌛ Waiting for application to be ready... ($i/30)"
+            echo " Waiting for application to be ready... ($i/30)"
             sleep 5
           done
           
@@ -182,8 +182,6 @@ jobs:
 
             echo "Deployment failed. Rolled back to previous version on port $CURRENT_PORT."
             exit 1  # GitHub Actions에서 실패로 감지하도록 exit 1 추가
-          fi
-
           fi
 
 
