@@ -154,14 +154,31 @@ jobs:
           # 애플리케이션 상태 확인 (최대 30번 반복, 5초 간격)
           echo "Waiting for new application to start..."
           for i in {1..30}; do
-            if curl -s http://127.0.0.1:\$NEW_PORT/actuator/health | grep -q 'UP'; then
+            if curl -s http://127.0.0.1:$NEW_PORT/actuator/health | grep -q 'UP'; then
               echo "Application started successfully!"
+              SUCCESS=true
               break
             fi
-            echo "Waiting for application to be ready... ($i/30)"
+            echo "⌛ Waiting for application to be ready... ($i/30)"
             sleep 5
           done
           
+          # DOWN 상태 처리
+          if [ -z "$SUCCESS" ]; then
+            echo "ERROR: New application failed to start on port $NEW_PORT"
+            
+            # 롤백 로직 (이전 버전으로 트래픽 재전환)
+            echo "🔄 Rolling back to previous version..."
+            sudo sed -i "s|proxy_pass http://.*|proxy_pass http://127.0.0.1:$CURRENT_PORT;|" /etc/nginx/nginx.conf
+            sudo nginx -s reload
+          
+            echo "Stopping failed new application..."
+            sudo systemctl stop my-spring-app
+          
+            echo "Deployment failed. Rolled back to the previous version running on port $CURRENT_PORT."
+            exit 1
+          fi
+
 
           # Nginx 업데이트 및 reload
           echo "New application port: \$NEW_PORT"
