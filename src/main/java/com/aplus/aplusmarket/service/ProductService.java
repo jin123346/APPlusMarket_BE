@@ -238,7 +238,6 @@ public class ProductService {
     //나의 현재 판매중인 상품 조회
     public ResponseDTO selectProductByIdForSelling(ProductListRequestDTO productListRequestDTO){
         try{
-
             List<ProductResponseCard> products
                     = productMapper.selectProductByIdForStatus(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId(),productListRequestDTO.getStatus());
             log.info(products);
@@ -304,7 +303,6 @@ public class ProductService {
     //숨김처리 // 숨김해제
     public ResponseDTO updateStatus(Long productId,String status){
         try {
-
             int result = productMapper.updateStatus(productId,status);
 
             if(result != 1 ){
@@ -544,7 +542,6 @@ public class ProductService {
                 .brand(product.getBrand())
                 .buyerId(product.getBuyerId())
                 .isWished(product.isWished())
-                .hit(product.getHit())
                 .ProductImages(product.getImages().stream().map(Product_ImagesDTO::toDTO).toList())
                 .build();
     }
