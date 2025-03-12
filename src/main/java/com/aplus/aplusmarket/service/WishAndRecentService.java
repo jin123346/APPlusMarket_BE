@@ -1,11 +1,11 @@
 package com.aplus.aplusmarket.service;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.ProductCardDTO;
 import com.aplus.aplusmarket.entity.ProductResponseCard;
 import com.aplus.aplusmarket.entity.WishList;
+import com.aplus.aplusmarket.handler.CustomException;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.product.WishListMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -53,18 +53,19 @@ public class WishAndRecentService {
                 wishListMapper.deleteById(wishListId);
                 log.info("기존 관심상품 삭제 => 관심상품 해제 완료");
 
-                return ResponseDTO.of("Success",3032,"관심상품 해제 완료");
+                return ResponseDTO.success(ResponseCode.WISH_REMOVE_SUCCESS);
             }
 
             int result = wishListMapper.insertWishList(productId,userId);
             log.info("기존 관심상품 등록 완료");
 
             if(result == 0 ){
-              return    ErrorResponseDTO.of(2034,"관심상품 업데이트 처리가 안됨");
+                return ResponseDTO.error(ResponseCode.WISH_UPDATE_FAILED);
+
             }
-            return ResponseDTO.of("success",3035,"관심상품 업데이트 처리 완료");
+            return ResponseDTO.success(ResponseCode.WISH_UPDATE_SUCCESS);
         }catch (Exception e){
-            return ErrorResponseDTO.of(2033,"관심상품 처리 중 에러 발생");
+            throw new CustomException(ResponseCode.WISH_UPDATE_FAILED);
         }
 
     }
@@ -75,11 +76,12 @@ public class WishAndRecentService {
             List<ProductResponseCard> list = wishListMapper.productWishList(userId);
 
             log.info("조회 결과 : {}",list);
-            return DataResponseDTO.of(list,2036,"관심상품 조회 성공");
+            return ResponseDTO.success(ResponseCode.WISH_LIST_SUCCESS,list);
+
 
 
         }catch (Exception e){
-            return ErrorResponseDTO.of(2035,"관심상품 가져오기 실패");
+            throw new CustomException(ResponseCode.WISH_LIST_FAILED);
         }
     }
 
@@ -101,10 +103,11 @@ public class WishAndRecentService {
 
             redisTemplate.expire(key, Duration.ofDays(2));
 
-            return ResponseDTO.of("success",2038,"최근봉상품 등록");
+            return ResponseDTO.success(ResponseCode.RECENT_PRODUCT_ADD_SUCCESS);
+
         }catch(Exception e){
             log.error(e.getMessage());
-            return null;
+            throw new CustomException(ResponseCode.RECENT_PRODUCT_ADD_FAILED);
         }
 
 
@@ -112,12 +115,12 @@ public class WishAndRecentService {
 
     }
 
-    public DataResponseDTO getRecentProducts(Long userId) {
+    public ResponseDTO getRecentProducts(Long userId) {
         String key = KEY_RECENT_PREFIX+userId;
         Set<Object> productLists =  redisTemplate.opsForZSet().range(key,0,-1);
 
+        return ResponseDTO.success(ResponseCode.RECENT_PRODUCT_LIST_SUCCESS,productLists);
 
-        return DataResponseDTO.of(productLists,2039,"최근본 상품 리스트");
     }
 
     public void mergeGuestDataToUser(String tempUserId, Long userId) {

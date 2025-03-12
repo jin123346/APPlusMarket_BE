@@ -1,11 +1,11 @@
 package com.aplus.aplusmarket.controller;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
+
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.auth.requset.FindUserRequestDTO;
 import com.aplus.aplusmarket.dto.auth.response.AddressBookResponseDTO;
 import com.aplus.aplusmarket.dto.product.request;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.service.AddressService;
 import com.aplus.aplusmarket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,9 +35,6 @@ public class UserController {
 
         ResponseDTO responseDTO = userService.findUidByNameAndEmail(user);
 
-        if(responseDTO instanceof DataResponseDTO){
-            return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
-        }
         return ResponseEntity.ok().body(responseDTO);
     }
 
@@ -48,9 +45,7 @@ public class UserController {
 
         ResponseDTO responseDTO = userService.findUidByUidAndEmail(user);
 
-        if(responseDTO instanceof DataResponseDTO){
-            return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
-        }
+
         return ResponseEntity.ok().body(responseDTO);
     }
 
@@ -67,14 +62,12 @@ public class UserController {
         log.info("여기로 들어옴 {}",image);
 
         if(image.isEmpty() || image==null){
-            return ResponseEntity.ok().body(ErrorResponseDTO.of(1211,"파일이 없습니다."));
+            return ResponseEntity.ok().body(ResponseDTO.error(ResponseCode.NOT_FILE));
         }
 
 
         ResponseDTO responseDTO = userService.profileUpdate(image,id);
-        if(responseDTO instanceof DataResponseDTO){
-            return  ResponseEntity.ok().body((DataResponseDTO)responseDTO);
-        }
+
 
         return ResponseEntity.ok().body(responseDTO);
     }
@@ -84,13 +77,10 @@ public class UserController {
     public ResponseEntity findAddress(@PathVariable(value = "id") Long id, HttpServletRequest request){
         Long userId = (Long) request.getAttribute("id");
         log.info("id : " + id);
-        if(id != userId){return ResponseEntity.status(401).body(ErrorResponseDTO.of(1325,"허가되지 않은 유저입니다."));}
+        if(id != userId){return ResponseEntity.status(401).body(ResponseDTO.error(ResponseCode.NOT_AUTHORITY));}
 
         ResponseDTO responseDTO = addressService.selectAddressByUserId(userId);
 
-        if(responseDTO instanceof DataResponseDTO){
-            return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
-        }
         return ResponseEntity.ok().body(responseDTO);
     }
 
@@ -106,7 +96,7 @@ public class UserController {
     public ResponseEntity modify(@RequestBody AddressBookResponseDTO address,HttpServletRequest request){
         Long userId = (Long) request.getAttribute("id");
         log.info("수정 시작  id : " + address.getUserId());
-        if(address.getUserId() != userId){return ResponseEntity.status(401).body(ErrorResponseDTO.of(1325,"허가되지 않은 유저입니다."));}
+        if(address.getUserId() != userId){return ResponseEntity.status(401).body(ResponseDTO.error(ResponseCode.NOT_AUTHORITY));}
 
         ResponseDTO responseDTO =  addressService.updateAddress(address);
 

@@ -74,12 +74,12 @@ public class ProductController {
         return ResponseEntity.ok().body(responseDTO);
     }
 
-    //상품 삭제(프론트 기능 없습니다 현재)
-    @DeleteMapping("/delete/{id}/{userId}")
-    public boolean deleteProductById(@PathVariable(value = "id") String id,@PathVariable(value = "userId") Long userId) {
-        boolean check = productService.deleteProductById(id,userId);
-        return check;
-    }
+//    //상품 삭제(프론트 기능 없습니다 현재)
+//    @DeleteMapping("/delete/{id}/{userId}")
+//    public boolean deleteProductById(@PathVariable(value = "id") String id,@PathVariable(value = "userId") Long userId) {
+//        boolean check = productService.deleteProductById(id,userId);
+//        return check;
+//    }
     
     //상품 페이징 처리 (메인 홈 화면만 출력되고 있습니다)
     @GetMapping("/listpage")

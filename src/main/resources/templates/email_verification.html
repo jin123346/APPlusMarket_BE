@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APPLUS Market 이메일 인증</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .email-header {
+            background-color: #1a73e8;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .email-header img {
+            width: 120px;
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .email-body {
+            padding: 40px 30px;
+            color: #333333;
+        }
+
+        .greeting {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .verification-code {
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 30px 0;
+            border: 1px solid #d0e3ff;
+        }
+
+        .code {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            color: #1a73e8;
+            margin: 10px 0;
+        }
+
+        .expiry {
+            font-size: 14px;
+            color: #ea4335;
+            margin-top: 5px;
+        }
+
+        .instruction {
+            font-size: 15px;
+            margin: 30px 0;
+            line-height: 1.5;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #666666;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .contact {
+            margin-top: 20px;
+        }
+
+        .social-links {
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        @media only screen and (max-width: 480px) {
+            .email-body {
+                padding: 30px 20px;
+            }
+
+            .code {
+                font-size: 26px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <!-- 로고 이미지 URL로 대체하세요 -->
+        <div class="logo-text">APPLUS Market</div>
+    </div>
+
+    <div class="email-body">
+        <div class="greeting">안녕하세요, APPLUS Market 회원님!</div>
+
+        <div class="message">
+            APPLUS Market 회원가입을 위한 이메일 인증 절차를 진행해 주셔서 감사합니다. 아래의 인증 코드를 입력하시면 회원가입이 완료됩니다.
+        </div>
+
+        <div class="verification-code">
+            <div>인증 코드</div>
+            <div class="code">{{code}}</div>
+            <div class="expiry">* 이 인증 코드는 3분 후에 만료됩니다.</div>
+        </div>
+
+        <div class="instruction">
+            <p>인증 코드 사용 방법:</p>
+            <ol>
+                <li>APPLUS Market 앱의 이메일 인증 화면에서 위 6자리 코드를 입력하세요.</li>
+                <li>인증 완료 후 회원가입이 완료됩니다.</li>
+            </ol>
+        </div>
+
+        <div class="message">
+            이 메일은 회원님이 APPLUS Market 앱에서 회원가입을 요청하셨기 때문에 발송되었습니다. 만약 회원님이 가입을 요청하지 않으셨다면, 이 메일을 무시하셔도 됩니다.
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>© 2025 APPLUS Market. 모든 권리 보유.</div>
+        <div class="contact">
+            문의사항이 있으시면 <a href="mailto:support@applusmarket.com">support@applusmarket.com</a>으로 연락해 주세요.
+        </div>
+        <div class="social-links">
+            <a href="#">인스타그램</a> |
+            <a href="#">페이스북</a> |
+            <a href="#">유튜브</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

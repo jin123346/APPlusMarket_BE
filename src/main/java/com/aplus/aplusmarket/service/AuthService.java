@@ -7,6 +7,8 @@ import com.aplus.aplusmarket.dto.*;
 import com.aplus.aplusmarket.dto.auth.requset.LoginRequest;
 import com.aplus.aplusmarket.dto.auth.UserDTO;
 import com.aplus.aplusmarket.entity.User;
+import com.aplus.aplusmarket.handler.CustomException;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import com.aplus.aplusmarket.repository.TokenHistoryRepository;
 import com.aplus.aplusmarket.util.TokenEncrpytor;
@@ -15,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.coyote.Response;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -60,86 +63,71 @@ public class AuthService {
      */
     @Transactional
     public ResponseDTO login(LoginRequest loginRequest, HttpServletResponse resp, HttpServletRequest request) {
-        log.info("로그인 시도한 아이디 : {}", loginRequest.getUid());
-        Optional<User> opt = userMapper.selectUserByUid(loginRequest.getUid());
-        log.info("111111");
 
-        if (opt.isPresent()) {
-            log.info("22222");
-            User user = opt.get();
-            //active deactive 확인 여부
 
-            log.info("DB에서 가져온 사용자 정보: {}", user);
-            if (!user.getStatus().equals("Active")) {
-                log.info("로그인 실패 - not Active, 아이디: {}", loginRequest.getUid());
+        try{
+            log.info("로그인 시도한 아이디 : {}", loginRequest.getUid());
+            Optional<User> opt = userMapper.selectUserByUid(loginRequest.getUid());
+            log.info("111111");
 
-                return ResponseDTO.builder()
-                        .code(1002)
-                        .status("fail")
-                        .message("활성화된 계정이 아닙니다.")
+            if (opt.isPresent()) {
+                log.info("22222");
+                User user = opt.get();
+                //active deactive 확인 여부
+
+                log.info("DB에서 가져온 사용자 정보: {}", user);
+                if (!user.getStatus().equals("Active")) {
+                    log.info("로그인 실패 - not Active, 아이디: {}", loginRequest.getUid());
+
+                    return ResponseDTO.error(ResponseCode.LOGIN_ACCOUNT_LOCKED);
+
+                }
+                // 비밀번호 검증 (로그 추가)
+                if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                    log.info("로그인 실패 - 비밀번호 불일치, 아이디: {}", loginRequest.getUid());
+                    return ResponseDTO.error(ResponseCode.LOGIN_PASSWORD_ERROR);
+
+
+                }
+                //  Spring Security 인증 처리
+
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUid(), loginRequest.getPassword()));
+                //  JWT 토큰 생성
+                log.info("jwt 토큰생성 성공, 아이디: {}", loginRequest.getUid());
+
+                String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUid(), user.getNickname(),user.getProfileImg());
+                String refreshToken = jwtTokenProvider.createRefreshToken(user.getUid(), user.getNickname());
+                UserDTO loginUser = UserDTO.loginUser(user);
+
+                //  응답 헤더 및 쿠키에 토큰 추가
+
+                resp.setHeader("Authorization", "Bearer " + accessToken);
+                ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+                        .httpOnly(true)  //  JavaScript에서 접근 불가
+                        .secure(false)    // HTTPS에서만 전송
+                        .path("/")       // 모든 경로에서 사용 가능
+                        .sameSite("Strict") //  CSRF 공격 방지
+                        .maxAge(7 * 24 * 60 * 60) // 7일 유지
                         .build();
+                log.info("로그인 성공 아이디 : {}", loginRequest.getUid());
+                resp.addHeader("Set-Cookie", refreshTokenCookie.toString()); // 쿠키를 응답 헤더에 추가
+
+                //  MongoDB에 토큰 저장 (토큰 히스토리)
+                TokenHistory saveTokenToDB = jwtTokenProvider.saveTokenToDB(user.getId(), refreshToken, loginRequest.getDeviceInfo(), request);
+                if (saveTokenToDB != null) {
+
+                    wishAndRecentService.mergeGuestDataToUser(loginRequest.getTempUserId(),loginUser.getId());
+
+                    log.info("로그인 성공 - 아이디: {}", loginRequest.getUid());
+                    return ResponseDTO.success(ResponseCode.LOGIN_SUCCESS,loginUser);
+                }
+
             }
-            // 비밀번호 검증 (로그 추가)
-            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                log.info("로그인 실패 - 비밀번호 불일치, 아이디: {}", loginRequest.getUid());
-                return ResponseDTO.builder()
-                        .code(1003)
-                        .status("fail")
-                        .message("계정이 일치하지 않습니다.")
-                        .build();
-            }
-            //  Spring Security 인증 처리
-
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUid(), loginRequest.getPassword()));
-            //  JWT 토큰 생성
-            log.info("jwt 토큰생성 성공, 아이디: {}", loginRequest.getUid());
-
-            String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUid(), user.getNickname(),user.getProfileImg());
-            String refreshToken = jwtTokenProvider.createRefreshToken(user.getUid(), user.getNickname());
-            UserDTO loginUser = UserDTO.loginUser(user);
-
-            //  응답 헤더 및 쿠키에 토큰 추가
-
-            resp.setHeader("Authorization", "Bearer " + accessToken);
-            ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
-                    .httpOnly(true)  //  JavaScript에서 접근 불가
-                    .secure(false)    // HTTPS에서만 전송
-                    .path("/")       // 모든 경로에서 사용 가능
-                    .sameSite("Strict") //  CSRF 공격 방지
-                    .maxAge(7 * 24 * 60 * 60) // 7일 유지
-                    .build();
-            log.info("로그인 성공 아이디 : {}", loginRequest.getUid());
-            resp.addHeader("Set-Cookie", refreshTokenCookie.toString()); // 쿠키를 응답 헤더에 추가
-
-            //  MongoDB에 토큰 저장 (토큰 히스토리)
-            TokenHistory saveTokenToDB = jwtTokenProvider.saveTokenToDB(user.getId(), refreshToken, loginRequest.getDeviceInfo(), request);
-            if (saveTokenToDB != null) {
-
-                //
-                wishAndRecentService.mergeGuestDataToUser(loginRequest.getTempUserId(),loginUser.getId());
-
-
-                log.info("로그인 성공 - 아이디: {}", loginRequest.getUid());
-                return new DataResponseDTO<>(loginUser, 1000, "로그인 성공");
-            } else {
-                log.error("MongoDB에 토큰 저장 실패 - 아이디: {}", loginRequest.getUid());
-                return ResponseDTO.builder()
-                        .code(1004)
-                        .status("fail")
-                        .message("로그인 중 오류가 발생했습니다.")
-                        .build();
-            }
-
-            // return new DataResponseDTO<>(UserDTO.loginUser(user), 1000, "로그인 성공");
-//
-
+            return ResponseDTO.error(ResponseCode.LOGIN_ACCOUNT_NOT_FOUND);
+        } catch (Exception e) {
+            throw new CustomException(ResponseCode.LOGIN_INTERNAL_SERVER_ERROR);
         }
-        //해당하는 user 없음
-        return ResponseDTO.builder()
-                .code(1003)
-                .status("fail")
-                .message("계정이 일치하지 않습니다.")
-                .build();
+
 
 
     }
@@ -187,9 +175,9 @@ public class AuthService {
             response.addHeader("Set-Cookie", deleteCookie.toString());
 
 
-            return ResponseDTO.of("success", 1010, "Logged out successfully");
+            return ResponseDTO.success(ResponseCode.LOGOUT_SUCCESS);
         } catch (Exception e) {
-            return ResponseDTO.of("fail", 1011, "로그아웃 중 에러 발생 " + e.getMessage());
+            throw new CustomException(ResponseCode.LOGIN_INTERNAL_SERVER_ERROR);
         }
 
     }
@@ -202,14 +190,15 @@ public class AuthService {
 
         if (refreshToken == null) {
             log.info("❌ Refresh Token 없음");
-            return ErrorResponseDTO.of(1005, "토큰이 존재하지 않습니다.");
+            return ResponseDTO.error(ResponseCode.LOGIN_REFRESH_TOKEN_NOT_FOUND);
+
         }
 
         try {
             // Refresh Token 검증
             if (!jwtTokenProvider.validateToken(refreshToken)) {
                 log.info("❌ Refresh Token 검증 실패");
-                return ErrorResponseDTO.of(1006, "토큰이 유효하지 않거나 만료되었습니다.");
+                return ResponseDTO.error(ResponseCode.LOGIN_REFRESH_TOKEN_NOT_FOUND);
             }
 
             // Refresh Token에서 UID 추출
@@ -218,7 +207,8 @@ public class AuthService {
 
             if (optionalUser.isEmpty()) {
                 log.info("❌ User가 존재하지 않음");
-                return ErrorResponseDTO.of(1006, "토큰이 유효하지 않거나 만료되었습니다.");
+                return ResponseDTO.error(ResponseCode.LOGIN_REFRESH_TOKEN_NOT_VALIDATED);
+
             }
 
             User user = optionalUser.get();
@@ -242,14 +232,15 @@ public class AuthService {
                 resp.setHeader("Authorization","Bearer "+newAccessToken);
                 UserDTO.loginUser(user);
                 user.setPassword("");
-                return DataResponseDTO.of(user, 1000, "Access Token이 재발급되었습니다.");
+                return ResponseDTO.success(ResponseCode.LOGIN_REFRESH_TOKEN_SUCCESS,user);
+
             }
 
-            return ErrorResponseDTO.of(1006, "Refresh Token 기록을 찾을 수 없습니다.");
+            return ResponseDTO.error(ResponseCode.LOGIN_REFRESH_TOKEN_NOT_FOUND);
 
         } catch (Exception e) {
             log.info("❌ Refresh Token 처리 중 오류 발생: {}", e.getMessage());
-            return ErrorResponseDTO.of(1006, "서버 내부 오류가 발생했습니다.");
+            throw new CustomException(ResponseCode.LOGIN_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -268,10 +259,10 @@ public class AuthService {
             userMapper.insertUser(savedUser);
             long id = savedUser.getId();
 
-            return ResponseDTO.of("succeess", 1100, "회원가입 성공 : " + id);
+            return ResponseDTO.success(ResponseCode.MEMBER_REGISTER_SUCCESS);
         } catch (Exception e) {
             log.error(e);
-            return ErrorResponseDTO.of(1103, "회원가입 실패 :" + e.getMessage());
+            throw new CustomException(ResponseCode.MEMBER_REGISTER_FAIL);
         }
 
     }
@@ -343,7 +334,7 @@ public class AuthService {
 
         } catch (Exception e) {
             log.error("Refresh Token 무효화 중 오류 발생 - userId: {}", userId, e);
-            throw new RuntimeException("Refresh Token 무효화 중 오류 발생");
+            throw new CustomException(ResponseCode.LOGIN_REFRESH_TOKEN_INTERNAL_ERROR);
         }
     }
 
@@ -362,12 +353,12 @@ public class AuthService {
         try{
             boolean isExist = userMapper.userIsExist(id);
             if(!isExist){
-                return ErrorResponseDTO.of(1105, "회원 탈퇴중 오류" );
+                return ResponseDTO.error(ResponseCode.MEMBER_DELETE_FAIL);
             }
 
             int result = userMapper.updateUserWithdrawal(id, LocalDateTime.now(),"DeActive");
             if(result != 1){
-                return ErrorResponseDTO.of(1105, "회원 탈퇴중 오류" );
+                return ResponseDTO.error(ResponseCode.MEMBER_DELETE_FAIL);
             }
 
             // 로그아웃 처리,
@@ -389,10 +380,10 @@ public class AuthService {
 
             response.addHeader("Set-Cookie", deleteCookie.toString());
             //
-            return ResponseDTO.of("success",1104,"회원탈퇴 성공");
+            return ResponseDTO.success(ResponseCode.MEMBER_DELETE_SUCCESS);
         }catch (Exception e){
             log.error(e);
-            return ErrorResponseDTO.of(1105, "회원 탈퇴중 오류  :" + e.getMessage());
+            throw new CustomException(ResponseCode.MEMBER_DELETE_FAIL);
         }
 
     }

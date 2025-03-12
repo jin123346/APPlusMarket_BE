@@ -1,10 +1,11 @@
 package com.aplus.aplusmarket.service;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
+
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.auth.response.AddressBookResponseDTO;
 import com.aplus.aplusmarket.entity.AddressBook;
+import com.aplus.aplusmarket.handler.CustomException;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.auth.AddressBookMapper;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,26 +35,29 @@ public class AddressService {
 
         try {
             if(userId == 0 ){
-              return   ErrorResponseDTO.of(1333,"해당하는 유저가 없습니다.");
+              return ResponseDTO.error(ResponseCode.NO_INPUT_DATA);
             }
 
             List<AddressBook> addressBooks =  addressBookMapper.findByUserId(userId);
             log.info("조회된 주소 : {}",addressBooks);
 
             if(addressBooks.isEmpty() || addressBooks.size() == 0){
-                return ResponseDTO.of("success",1321,"등록된 주소가 없습니다.");
+                return ResponseDTO.success(ResponseCode.ADDRESS_NOT_FOUND);
             }
 
            List<AddressBookResponseDTO> addressBookDtos = addressBooks.stream().map(
                    addressBook -> new AddressBookResponseDTO().toResponseDTO(addressBook))
                    .toList();
             log.info("조회된 주소 : {}",addressBookDtos);
-            return DataResponseDTO.of(addressBookDtos,1320,"주소 등록 확인");
+            return ResponseDTO.success(ResponseCode.ADDRESS_FIND_SUCCESS,addressBookDtos);
+
+                   // DataResponseDTO.of(addressBookDtos,1320,"주소 등록 확인");
 
         }
         catch(Exception e){
             log.error("주소 확인 중 에러 발생 "+e.getMessage());
-            return  ErrorResponseDTO.of(1333,"주소확인 중 오류 발생");
+
+            throw new CustomException(ResponseCode.ADDRESS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -67,14 +71,14 @@ public class AddressService {
 
             int result = addressBookMapper.insertAddress(addressBook);
             if(result>0){
-                return ResponseDTO.of("success",1355,"주소가 등록되었습니다.");
+                return ResponseDTO.success(ResponseCode.ADDRESS_CREATE_SUCCESS);
             }
 
-            return ErrorResponseDTO.of(1356,"주소등록에 실패했습니다.");
+            return ResponseDTO.error(ResponseCode.ADDRESS_CREATE_FAILED);
 
         } catch (Exception e) {
             log.error("주소 등록 중 에러 발생 "+e.getMessage());
-            return  ErrorResponseDTO.of(1333,"주소 등록 중 오류 발생");
+            throw new CustomException(ResponseCode.ADDRESS_INTERNAL_SERVER_ERROR);
         }
 
     }
@@ -90,14 +94,14 @@ public class AddressService {
 
             int result = addressBookMapper.updateAddressForModify(addressBook);
             if(result>0){
-                return ResponseDTO.of("success",1355,"주소가 수정되었습니다.");
+                return ResponseDTO.success(ResponseCode.ADDRESS_MODIFY_SUCCESS);
             }
 
-            return ErrorResponseDTO.of(1356,"주소수정에 실패했습니다.");
+            return ResponseDTO.error(ResponseCode.ADDRESS_MODIFY_FAILED);
 
         } catch (Exception e) {
-            log.error("주소 등록 중 에러 발생 "+e.getMessage());
-            return  ErrorResponseDTO.of(1333,"주소 수정 중 오류 발생");
+            log.error("주소 수정 중 에러 발생 "+e.getMessage());
+            throw new CustomException(ResponseCode.ADDRESS_INTERNAL_SERVER_ERROR);
         }
     }
     //주소 삭제
@@ -105,25 +109,25 @@ public class AddressService {
     public ResponseDTO deleteAddress(Long addressId,Long userId){
         try{
             if(addressId == 0 ){
-                return ErrorResponseDTO.of(1356,"주소삭제에 실패했습니다.");
+                return  ResponseDTO.success(ResponseCode.ADDRESS_DELETED_FAILED);
             }
             
           long id =  addressBookMapper.addressIsExist(addressId);
             if( userId != id){
-                return ErrorResponseDTO.of(1356,"사용자가 일치 하지 않습니다.");
+                return ResponseDTO.error(ResponseCode.ADDRESS_DELETED_NOT_AUTHORITY);
             }
 
             int result = addressBookMapper.deleteAddressById(addressId);
             
             if(result> 0){
-                return ResponseDTO.of("success",1355,"주소가 삭제되었습니다.");
+                return ResponseDTO.success(ResponseCode.ADDRESS_DELETED_SUCCESS);
             }
 
-            return ErrorResponseDTO.of(1356,"주소삭제에 실패했습니다.");
+            return ResponseDTO.error(ResponseCode.ADDRESS_DELETED_FAILED);
 
         } catch (Exception e) {
             log.error("주소 등록 중 에러 발생 "+e.getMessage());
-            return  ErrorResponseDTO.of(1333,"주소 삭제 중 오류 발생");
+            throw new CustomException(ResponseCode.ADDRESS_INTERNAL_SERVER_ERROR);
         }
     }
 

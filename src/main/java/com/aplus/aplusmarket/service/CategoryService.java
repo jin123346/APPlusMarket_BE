@@ -1,10 +1,10 @@
 package com.aplus.aplusmarket.service;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.CategoryResponseDTO;
 import com.aplus.aplusmarket.entity.Category;
+import com.aplus.aplusmarket.handler.CustomException;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.product.CategoryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -35,10 +35,11 @@ public class CategoryService {
                categoryResponseDTOS.add(categoryResponseDTO);
            }
 
-           return DataResponseDTO.of(categoryResponseDTOS,2055,"조회 성공");
+           return ResponseDTO.success(ResponseCode.CATEGORY_FIND_SUCCESS);
 
        }catch (Exception e){
-           return ErrorResponseDTO.of(2500,"조회오류");
+           log.error(e);
+           throw new CustomException(ResponseCode.CATEGORY_FIND_FAILED);
        }
    }
 }

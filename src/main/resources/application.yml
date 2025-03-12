@@ -43,6 +43,19 @@ spring:
                 pool:
                     max-wait: 5000ms
 
+    mail:
+        host: smtp.gmail.com
+        port: 587
+        username: hajhi7899@gmail.com
+        password: kdtl ocrv pjss zpxx
+        properties:
+          mail:
+              smtp:
+                  auth: ture
+                  starttls:
+                      enable: true
+
+
 mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로
     config-location: classpath:mybatis-config.xml  # MyBatis 설정 파일 경로 (선택)

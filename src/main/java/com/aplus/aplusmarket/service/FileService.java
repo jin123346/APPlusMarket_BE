@@ -62,7 +62,7 @@ public class FileService {
         try {
             File file = new File(path + "/" + uuidName);
             if (file.exists()) {
-                return file.delete(); // ❌ 실제 파일 삭제
+                return file.delete(); //실제 파일 삭제
             }
             return false;
         } catch (Exception e) {

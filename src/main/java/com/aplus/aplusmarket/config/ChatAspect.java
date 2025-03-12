@@ -1,6 +1,5 @@
 package com.aplus.aplusmarket.config;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatRoomCreateDTO;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +19,8 @@ public class ChatAspect {
     @AfterReturning(pointcut ="execution(* com.aplus.aplusmarket.controller.chat.ChatController.insertChatRoom(..))", returning = "result")
     public void insertChatRoom(final JoinPoint joinPoint, ResponseDTO result) {
         if (result != null  && result.getCode() == 4000) {
-            if (result instanceof DataResponseDTO<?> dataResponse) {
-                Object data = dataResponse.getData();
+            if (result.getData() != null) {
+                Object data = result.getData();
                 if (data instanceof ChatRoomCreateDTO) {
                     String destination = "/sub/user/" + ((ChatRoomCreateDTO) data).getUserId();
                     messagingTemplate.convertAndSend(destination, data);
