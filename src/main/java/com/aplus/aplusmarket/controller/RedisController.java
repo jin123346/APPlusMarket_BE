@@ -1,6 +1,5 @@
 package com.aplus.aplusmarket.controller;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.ProductCardDTO;
 import com.aplus.aplusmarket.dto.product.request;
@@ -34,7 +33,7 @@ public class RedisController {
 
         Long user = (Long) request.getAttribute("id");
         log.info("요청한 유저 : {}",user);
-        DataResponseDTO responseDTO = wishAndRecentService.getRecentProducts(user);
+        ResponseDTO responseDTO = wishAndRecentService.getRecentProducts(user);
 
         return ResponseEntity.ok(responseDTO);
     }

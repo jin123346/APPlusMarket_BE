@@ -1,7 +1,6 @@
 package com.aplus.aplusmarket.controller;
 
 import com.aplus.aplusmarket.document.Products;
-import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.repository.ProductsRepository;
 import com.aplus.aplusmarket.service.SamsungCrawlerService;
@@ -37,9 +36,6 @@ public class CrawlerController {
         System.out.println("디코딩된 검색어: " + decodedKeyword);
         ResponseDTO responseDTO =  samsungCrawlerService.searchProductByKeyWord(decodedKeyword); // 검색 개수 최대 10개
 
-        if(responseDTO instanceof DataResponseDTO<?>){
-            return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
-        }
 
         return ResponseEntity.ok().body(responseDTO);
     }

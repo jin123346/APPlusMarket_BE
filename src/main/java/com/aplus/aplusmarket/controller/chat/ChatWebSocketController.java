@@ -3,6 +3,7 @@ package com.aplus.aplusmarket.controller.chat;
 import com.aplus.aplusmarket.documents.ChatMessage;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -55,7 +56,8 @@ public class ChatWebSocketController {
 
         messagingTemplate.convertAndSend("/sub/chatroom/" + result.getChatRoomId(), chatMessageDTO);
         log.info("💻 웹소켓 메시지 저장 후 전송 "+ result);
-        return ResponseDTO.of("success", 4000, "Message broadcasted successfully");
+
+        return ResponseDTO.success(ResponseCode.CHAT_SOCKET_SUCCESS);
     }
 
 

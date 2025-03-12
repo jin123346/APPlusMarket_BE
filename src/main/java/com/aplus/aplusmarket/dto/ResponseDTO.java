@@ -1,5 +1,6 @@
 package com.aplus.aplusmarket.dto;
 
+import com.aplus.aplusmarket.handler.ResponseCode;
 import lombok.*;
 /*
     2024.1.26 하진희 :  responseDTO (기본시 )
@@ -10,10 +11,55 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseDTO {
+public class ResponseDTO<T> {
+
+
     private  String status;
-    private  Integer code;
+    private  int httpCode;
+    private  int code;
     private  String message;
+    private T data;
+
+
+    public static <T> ResponseDTO<T> success(ResponseCode responseCode, T data) {
+        return ResponseDTO.<T>builder()
+                .status("success")
+                .httpCode(responseCode.getCode())
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
+                .data(data)
+                .build();
+    }
+
+    public static <T> ResponseDTO<T> success(ResponseCode responseCode) {
+        return ResponseDTO.<T>builder()
+                .status("success")
+                .httpCode(responseCode.getCode())
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
+                .data(null)
+                .build();
+    }
+
+    public static ResponseDTO<?> error(ResponseCode responseCode) {
+        return ResponseDTO.builder()
+                .status("failed")
+                .httpCode(responseCode.getHttpCode())
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
+                .data(null)
+                .build();
+    }
+
+    public static ResponseDTO<?> error(ResponseCode responseCode, String customMessage) {
+        return ResponseDTO.builder()
+                .status("failed")
+                .httpCode(responseCode.getHttpCode())
+                .code(responseCode.getCode())
+                .message(customMessage)
+                .data(null)
+                .build();
+    }
 
     /*
     예시
@@ -66,9 +112,7 @@ public class ResponseDTO {
 
 
 
-    public static ResponseDTO of(String status, Integer code, String message) {
-        return new ResponseDTO(status, code, message);
-    }
+
 
 
 }

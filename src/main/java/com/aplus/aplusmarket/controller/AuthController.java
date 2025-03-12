@@ -6,6 +6,7 @@ import com.aplus.aplusmarket.dto.auth.requset.LoginRequest;
 import com.aplus.aplusmarket.dto.auth.UserDTO;
 import com.aplus.aplusmarket.dto.auth.response.MyInfoUser;
 import com.aplus.aplusmarket.entity.User;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import com.aplus.aplusmarket.service.AuthService;
 import com.aplus.aplusmarket.service.UserService;
@@ -74,27 +75,18 @@ public class AuthController {
     public ResponseEntity refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken,HttpServletResponse resp){
         log.info("Refresh Token!! 요청 들어옴 "+refreshToken);
         if(refreshToken == null){
-            ResponseDTO responseDTO = ErrorResponseDTO.of(1005,"토큰이 존재하지않습니다.");
+
+            ResponseDTO responseDTO = ResponseDTO.error(ResponseCode.NO_TOKEN_IN_HERE);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
         }
         ResponseDTO responseDTO = authService.refreshToken(refreshToken,resp);
 
         // 실패 응답인 경우
-        if (responseDTO instanceof ErrorResponseDTO) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
-        }
 
-        // 성공 응답인 경우 (새 Access Token 포함)
-        if (responseDTO instanceof DataResponseDTO) {
-            DataResponseDTO dataResponseDTO = (DataResponseDTO) responseDTO;
-            // 클라이언트가 JSON 응답에서도 새 Access Token을 받을 수 있도록 추가
-            return ResponseEntity.ok()
-                    .body(dataResponseDTO);
-        }
 
-        // 예외 상황 (이론적으로 발생하지 않지만, 예외 처리를 위해 추가)
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponseDTO.of(1007, "알 수 없는 오류가 발생했습니다."));
+            return ResponseEntity.ok().body(responseDTO);
+
+
 
     }
 
@@ -106,14 +98,14 @@ public class AuthController {
         String uid="";
         ResponseDTO responseDTO;
         if(refreshToken == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseDTO.of("failed",401,"로그인이 필요합니다."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseDTO.error(ResponseCode.LOGIN_REQUIRED));
         }
         log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
         if(id == null || id == 0){
              uid = authService.getIdWithRefreshToken(refreshToken);
             if(uid==null) {
                 //토큰이 제대로 전달되지 않은 경우
-                return ResponseEntity.ok().body(ErrorResponseDTO.of(1202, "토큰이 사라짐"));
+                return ResponseEntity.ok().body(ResponseDTO.error(ResponseCode.NO_TOKEN_IN_HERE));
             }
             responseDTO = userService.selectUserByUidForMyInfo(uid);
 
@@ -123,10 +115,7 @@ public class AuthController {
         }
 
 
-        // 조회시 에러 상황
-        if(responseDTO instanceof  ErrorResponseDTO){
-            return ResponseEntity.ok().body((ErrorResponseDTO)responseDTO);
-        }
+
 
         return ResponseEntity.ok().body(responseDTO);
 
@@ -146,13 +135,36 @@ public class AuthController {
        // ResponseDTO responseDTO = userService;
         long token_id = (long) request.getAttribute("id");
         if(id != token_id){
-            return ResponseEntity.ok().body( ErrorResponseDTO.of(1125 ,"토큰정보와 일치하지 않습니다."));
+            return ResponseEntity.ok().body( ResponseDTO.error(ResponseCode.LOGIN_REFRESH_TOKEN_NOT_VALIDATED));
         }
 
         ResponseDTO responseDTO = authService.updateByUserForWithdrawal(id,refreshToken,resp);
 
 
         return ResponseEntity.ok().body(responseDTO);
+    }
+
+
+    //하진희 - 2025.03.02 이메일 인증 요청
+    @PostMapping("/mail/verification")
+    public ResponseEntity emailVerification(@RequestParam String email){
+        if(email == null){
+
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body( ResponseDTO.error(ResponseCode.EMAIL_CODE_NOT_CORRECT));
+        }
+
+        return ResponseEntity.ok().body(userService.verificationEmail(email));
+
+    }
+
+    @PostMapping("/mail/resend-verification-code")
+    public ResponseEntity resendVerificationCode(@RequestParam String code,@RequestParam String email){
+        if(code == null){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body( ResponseDTO.error(ResponseCode.EMAIL_CODE_NOT_CORRECT));
+        }
+
+        return ResponseEntity.ok().body(userService.verifyCode(email,code));
+
     }
 
 

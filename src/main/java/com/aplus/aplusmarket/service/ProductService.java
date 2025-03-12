@@ -1,8 +1,6 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.document.Products;
-import com.aplus.aplusmarket.dto.DataResponseDTO;
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.FindProduct;
 import com.aplus.aplusmarket.dto.product.requests.ImageItemDTO;
@@ -17,6 +15,8 @@ import com.aplus.aplusmarket.entity.Product;
 import com.aplus.aplusmarket.entity.ProductResponseCard;
 import com.aplus.aplusmarket.entity.Product_Images;
 import com.aplus.aplusmarket.entity.WishList;
+import com.aplus.aplusmarket.handler.CustomException;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
 import com.aplus.aplusmarket.mapper.product.ProductMapper;
 import com.aplus.aplusmarket.mapper.product.WishListMapper;
@@ -94,12 +94,13 @@ public class ProductService {
                     index++;
                 }
             }else {
-                throw new Exception("Image가 들어오지 않음!");
+                throw new CustomException(ResponseCode.PRODUCT_IMAGE_NOT_FOUND);
             }
-            return ResponseDTO.of("success",2000,"상품 등록 성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_REGISTER_SUCCESS);
         }catch (Exception e){
             log.error(e);
-            return ErrorResponseDTO.of(2001, "상품 등록 실패 :"+e.getMessage());
+            throw new CustomException(ResponseCode.PRODUCT_REGISTER_FAILED);
+
         }
     }
 
@@ -112,7 +113,7 @@ public class ProductService {
             ProductDTO productDTO = toDTO(product);
 
             if(product == null){
-                return ErrorResponseDTO.of(2004,"상품을 찾을 수 없습니다.");
+                throw new CustomException(ResponseCode.PRODUCT_NOT_FOUND);
             }
             log.info("🔥 [DEBUG] 조회된 상품 ID: {}", product.getId());
 
@@ -170,28 +171,33 @@ public class ProductService {
             int wishCount = wishListMapper.countWishList(product.getId());
             log.info("좋아요 갯수 : {}",wishCount);
             productDTO.setWishCount(wishCount);
+            return ResponseDTO.success(ResponseCode.PRODUCT_DETAIL_SUCCESS, productDTO);
 
-            return DataResponseDTO.of(productDTO, 2002, "상품 상세 정보 조회 성공");
         }catch (Exception e){
             log.error(e);
-            return ErrorResponseDTO.of(2003, "상품 상세 정보 조회 실패 :"+e.getMessage());
+            throw new CustomException(ResponseCode.PRODUCT_DETAIL_FAILED);
+
         }
     }
 
 
 
 
-    // 상품 삭제 기능(현재 상품에 대한 데이터를 삭제하는 식으로 되어 있습니다. 해당 기능은 조금 수정 해야 할것으로 보입니다.)
-    public boolean deleteProductById(String id,Long userId) {
-        //현재는 상품 먼저 삭제하고 있는데 이미지 부터 먼저 삭제하는것부터 해야 합니다.
-        Product product = productMapper.SelectProductById(Long.parseLong(id),userId); // 존재 여부 확인
-        if (product == null) {
-            log.warn("No product found to delete with ID: " + id);
-            return false;
-        }
-        boolean result = productMapper.DeleteProduct(Long.parseLong(id)); // 삭제 실행
-        return result;
-    }
+//    // 상품 삭제 기능(현재 상품에 대한 데이터를 삭제하는 식으로 되어 있습니다. 해당 기능은 조금 수정 해야 할것으로 보입니다.)
+//    public boolean deleteProductById(String id,Long userId) {
+//        //현재는 상품 먼저 삭제하고 있는데 이미지 부터 먼저 삭제하는것부터 해야 합니다.
+//        Product product = productMapper.SelectProductById(Long.parseLong(id),userId); // 존재 여부 확인
+//        if (product == null) {
+//            log.warn("No product found to delete with ID: " + id);
+//            throw new CustomException(ResponseCode.PRODUCT_DELETE_NOT_FOUND);
+//
+//        }
+//        boolean result = productMapper.DeleteProduct(Long.parseLong(id)); // 삭제 실행
+//        if (!result) {
+//            throw new CustomException(ResponseCode.PRODUCT_DELETE_FAILED);
+//        }
+//        return result;
+//    }
 
     //상품 페이징 처리 기능 (메인 화면)
     public ResponseDTO selectProductsByPage(int lastIndex, int pageSize,String keyword,String brand) {
@@ -221,10 +227,10 @@ public class ProductService {
                     .build();
             log.info("새로운 lastIndex : {}",newLastIndex);
 
-            return DataResponseDTO.of(listResponseDTO, 2004, "상품 목록 조회 성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_LIST_SUCCESS, listResponseDTO);
         } catch (Exception e) {
             log.error("상품 목록 조회 실패", e);
-            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+            throw  new CustomException(ResponseCode.PRODUCT_LIST_FAILED);
         }
     }
 
@@ -237,17 +243,17 @@ public class ProductService {
                     = productMapper.selectProductByIdForStatus(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId(),productListRequestDTO.getStatus());
             log.info(products);
             if(products == null || products.isEmpty()){
-                return ResponseDTO.of("success", 2006,"판매중인 상품이 없습니다.");
+                return ResponseDTO.success(ResponseCode.PRODUCT_SELLING_LIST_EMPTY);
             }
 
 
 
             List<ProductResponseCardDTO> productList = products.stream().map(this::toDTO).toList();
-            return DataResponseDTO.of(productList,2007,"판매중인 상품 조회 성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_SELLING_LIST_SUCCESS,productList);
 
         }catch (Exception e){
             log.error("상품 목록 조회 실패", e);
-            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+            throw new CustomException(ResponseCode.PRODUCT_LIST_FAILED);
         }
     }
 
@@ -258,15 +264,16 @@ public class ProductService {
                     = productMapper.selectProductByIdForCompleted(productListRequestDTO.getLastIndex(),productListRequestDTO.getUserId(),"Sold");
             log.info(products);
             if(products == null || products.isEmpty()){
-                return ResponseDTO.of("success", 2006,"구매완료 및 판매완료 상품이 없습니다.");
+                return ResponseDTO.success(ResponseCode.PRODUCT_PURCHASED_LIST_EMPTY);
             }
 
             List<ProductResponseCardDTO> productList = products.stream().map(this::toDTO).toList();
-            return DataResponseDTO.of(productList,2007,"구매완료 및 판매완료 상품 조회 성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_PURCHASED_LIST_SUCCESS,productList);
+
 
         }catch (Exception e){
             log.error("상품 목록 조회 실패", e);
-            return ErrorResponseDTO.of(2005, "상품 목록 조회에 실패 했습니다.");
+            throw new CustomException(ResponseCode.PRODUCT_LIST_FAILED);
         }
     }
 
@@ -276,13 +283,14 @@ public class ProductService {
             int result = productMapper.updateReload(productId);
 
             if(result != 1 ){
-                return ErrorResponseDTO.of(2010,"끌어올리기 실패");
+                return ResponseDTO.error(ResponseCode.PRODUCT_RELOAD_FAILED);
+
             }
-            return ResponseDTO.of("Success",2008,"끌어올리기 성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_RELOAD_SUCCESS);
 
         }catch (Exception e){
             log.error(e.getMessage());
-           return ErrorResponseDTO.of(2010,"끌어올리기 실패");
+            throw new CustomException(ResponseCode.PRODUCT_RELOAD_FAILED);
 
         }
     }
@@ -300,13 +308,15 @@ public class ProductService {
             int result = productMapper.updateStatus(productId,status);
 
             if(result != 1 ){
-                return ErrorResponseDTO.of(2010,status +"실패");
+                return ResponseDTO.error(ResponseCode.PRODUCT_STATUS_UPDATE_FAILED,status +"실패");
+
             }
-            return ResponseDTO.of("Success",2008,"끌어올리기 성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_STATUS_UPDATE_SUCCESS,status +"성공");
+
 
         }catch (Exception e){
             log.error(e.getMessage());
-            return ErrorResponseDTO.of(2010,status +"실패");
+            throw new CustomException(ResponseCode.PRODUCT_STATUS_UPDATE_FAILED.getHttpStatus(),ResponseCode.PRODUCT_STATUS_UPDATE_FAILED,status+"실패");
 
         }
     }
@@ -319,7 +329,7 @@ public class ProductService {
 
             log.info("수정할 product : {}",product);
             if(product.getSellerId() != userId){
-                return ErrorResponseDTO.of(2020,"권한이 없습니다.");
+                return ResponseDTO.error(ResponseCode.PRODUCT_UPDATE_PERMISSION_DENIED);
             }
 
             ProductDTO productDTO = toDTO(product);
@@ -345,12 +355,12 @@ public class ProductService {
             // DTO에 이미지 리스트 추가
             productDTO.setImages(imageDTOs);
 
-            return DataResponseDTO.of(productDTO,2022,"성공");
+            return ResponseDTO.success(ResponseCode.PRODUCT_DETAIL_SUCCESS);
 
         }catch (Exception e){
             log.error(e.getMessage());
-            return ErrorResponseDTO.of(2020,"업데이트 실패");
 
+            throw new CustomException(ResponseCode.PRODUCT_DETAIL_FAILED);
         }
     }
 
@@ -424,13 +434,15 @@ public class ProductService {
             boolean result = productMapper.updateProduct(product);
 
             if (!result) {
-                throw new RuntimeException(" 제품 업데이트 실패!");
+                throw new CustomException(ResponseCode.PRODUCT_UPDATE_FAILED);
             }
-            return ResponseDTO.of("success", 2036,"제품 수정완료");
+
+
+            return ResponseDTO.success(ResponseCode.PRODUCT_UPDATE_SUCCESS);
 
 
         }catch (Exception e){
-            return ErrorResponseDTO.of(2030,"에러 발생");
+            throw new CustomException(ResponseCode.PRODUCT_UPDATE_FAILED);
         }
 
     }

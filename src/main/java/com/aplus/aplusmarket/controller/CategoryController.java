@@ -1,6 +1,5 @@
 package com.aplus.aplusmarket.controller;
 
-import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.mapper.product.CategoryMapper;
 import com.aplus.aplusmarket.service.CategoryService;
@@ -22,7 +21,7 @@ public class CategoryController {
     public ResponseEntity selectCategoryAll(){
 
         ResponseDTO responseDTO =  categoryService.selectAllCategory();
-        return ResponseEntity.ok().body((DataResponseDTO)responseDTO);
+        return ResponseEntity.ok().body(responseDTO);
     }
 
 }

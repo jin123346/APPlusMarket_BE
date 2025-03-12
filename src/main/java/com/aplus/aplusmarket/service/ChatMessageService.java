@@ -1,10 +1,10 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.documents.ChatMessage;
-import com.aplus.aplusmarket.dto.DataResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.chat.request.ChatMessageDTO;
 import com.aplus.aplusmarket.dto.chat.request.MarkReadDTO;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -84,7 +84,7 @@ public class ChatMessageService {
                 .map(message -> message.toDTO(message))
                 .collect(Collectors.toList());
         // DTO로 변환하여 반환
-        return DataResponseDTO.success(result,4000);
+        return ResponseDTO.success(ResponseCode.CHAT_RETRIEVE_SUCCESS,result);
     }
 
      /**
@@ -115,10 +115,11 @@ public class ChatMessageService {
 
             log.info("✅ 읽음 처리 완료: {}개의 메시지", updateResult.getModifiedCount());
 
-            return ResponseDTO.of("success", 4000, "업데이트 완료");
+            return ResponseDTO.success(ResponseCode.CHAT_UPDATE_SUCCESS);
         } catch (Exception e) {
             log.error("❌ MongoDB 읽음 처리 오류: {}", e.getMessage());
-            return ResponseDTO.of("fail", 4004, "에러 발생");
+            return ResponseDTO.error(ResponseCode.CHAT_UPDATE_FAILED);
+
         }
     }
 }

@@ -1,11 +1,11 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.document.Products;
-import com.aplus.aplusmarket.dto.DataResponseDTO;
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.entity.Brand;
 import com.aplus.aplusmarket.entity.Category;
+import com.aplus.aplusmarket.handler.CustomException;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.repository.ProductsRepository;
 import com.aplus.aplusmarket.util.SamsungCategoryMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -88,6 +88,8 @@ public class SamsungCrawlerService {
                 p.setOriginalPrice(Double.parseDouble(price));
                // p.setProductUrl(productUrl);
 
+
+
                 productsRepository.save(p);
                 log.info("저장된 제품 : {}",p);
             }
@@ -130,25 +132,45 @@ public class SamsungCrawlerService {
                 String salePrice = priceDat[size-1];
                 String productUrl = "https://www.samsung.com/sec" + product.getString("goodsDetailUrl"); // 상세 페이지 URL
 
-                Products savedProduct = Products.builder()
-                        .category(category)
-                        .brand(samsungBrand)
-                        .originalPrice(Double.parseDouble(originalPrice))
-                        .goodsId(goodsId)
-                        .finalPrice(Double.parseDouble(salePrice))
-                        .productCode(mdlNm)
-                        .productDetailCode(modelCode)
-                        .name(name)
-                        .productUrl(productUrl)
-                        .build();
-                productsRepository.save(savedProduct);
 
-                System.out.println("제품명: " + name + ", 가격: " + originalPrice + "원, 링크: " + productUrl);
+                Optional<Products> existingProduct = productsRepository.findByProductDetailCode(modelCode);
+
+                if(existingProduct.isPresent()){
+                    // 기존 제품 업데이트
+                    Products p = existingProduct.get();
+                    p.setOriginalPrice(Double.parseDouble(originalPrice));
+                    p.setFinalPrice(Double.parseDouble(salePrice));
+                    p.setProductUrl(productUrl);
+                    p.setName(name);
+                    p.setCategory(category);
+                    p.setBrand(samsungBrand);
+                    productsRepository.save(p);
+                    log.info("업데이트된 제품 : {}", p);
+
+                }else{
+                    Products savedProduct = Products.builder()
+                            .category(category)
+                            .brand(samsungBrand)
+                            .originalPrice(Double.parseDouble(originalPrice))
+                            .goodsId(goodsId)
+                            .finalPrice(Double.parseDouble(salePrice))
+                            .productCode(mdlNm)
+                            .productDetailCode(modelCode)
+                            .name(name)
+                            .productUrl(productUrl)
+                            .build();
+                    productsRepository.save(savedProduct);
+                    System.out.println("제품명: " + name + ", 가격: " + originalPrice + "원, 링크: " + productUrl);
+
+
+                }
+
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CustomException(ResponseCode.SAMSUNG_CRAWL_FAILED);
         }
+
     }
 
     public ResponseDTO searchProductByKeyWord(String keyword){
@@ -166,26 +188,28 @@ public class SamsungCrawlerService {
             log.info("검색 결과 : {} 개", products.size());
 
             if(!products.isEmpty()){
-                return DataResponseDTO.of(products,2006,"조회되었습니다.");
+                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS,products);
             }
 
             List<Products> lists = searchSamsungProducts(keyword,10);
 
             if(lists.isEmpty()){
-               return ResponseDTO.of("success",2008,"해당하는 제품이 없습니다.");
+                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
             }
 
             products = mongoTemplate.find(query, Products.class);
             if (!products.isEmpty()) {
-                return DataResponseDTO.of(products, 2006, "API 검색 후 조회되었습니다.");
+                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS,products);
             }
 
 
         }catch (Exception e){
             log.error(e.getMessage());
+            throw new CustomException(ResponseCode.SAMSUNG_SEARCH_FAILED);
+
         }
 
-        return ErrorResponseDTO.of(2008, "검색 결과가 없습니다.");
+        return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
 
     }
 
