@@ -1,6 +1,5 @@
 package com.aplus.aplusmarket.util;
 
-import com.aplus.aplusmarket.dto.ErrorResponseDTO;
 import com.aplus.aplusmarket.entity.User;
 import com.aplus.aplusmarket.mapper.auth.UserMapper;
 import lombok.RequiredArgsConstructor;
