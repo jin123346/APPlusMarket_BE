@@ -73,12 +73,12 @@ public class AuthController {
 
     @GetMapping("/refresh")
     public ResponseEntity refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken,HttpServletResponse resp){
-        log.info("Refresh Token!! 요청 들어옴 "+refreshToken);
         if(refreshToken == null){
-
+            log.info("Refresh Token!! 들어오지 않음 ");
             ResponseDTO responseDTO = ResponseDTO.error(ResponseCode.NO_TOKEN_IN_HERE);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
         }
+        log.info("Refresh Token!! 요청 들어옴 "+refreshToken);
         ResponseDTO responseDTO = authService.refreshToken(refreshToken,resp);
 
         // 실패 응답인 경우
@@ -107,6 +107,8 @@ public class AuthController {
                 //토큰이 제대로 전달되지 않은 경우
                 return ResponseEntity.ok().body(ResponseDTO.error(ResponseCode.NO_TOKEN_IN_HERE));
             }
+            log.info("토큰에서 추출된 uid : {} ",uid);
+
             responseDTO = userService.selectUserByUidForMyInfo(uid);
 
         }else{

@@ -12,5 +12,9 @@
         SELECT * FROM tb_category where parent_id=#{id}
     </select>
 
+    <select id="selectCategoryByName" parameterType="String" resultType="com.aplus.aplusmarket.entity.Category">
+        SELECT * FROM tb_category where category_name=#{name}
+    </select>
+
 
 </mapper>
