@@ -208,7 +208,6 @@ public class AuthService {
             if (optionalUser.isEmpty()) {
                 log.info("❌ User가 존재하지 않음");
                 return ResponseDTO.error(ResponseCode.LOGIN_REFRESH_TOKEN_NOT_VALIDATED);
-
             }
 
             User user = optionalUser.get();
@@ -216,6 +215,8 @@ public class AuthService {
 
             // 새로운 Access Token 발급
             String newAccessToken = jwtTokenProvider.createToken(user.getId(), user.getUid(), user.getNickname(),user.getProfileImg());
+
+            log.info("새로은 AccessToken 생성");
 
             // Refresh Token 기록 업데이트 (MongoDB)
             String encrypted = TokenEncrpytor.encrypt(refreshToken);
@@ -230,9 +231,10 @@ public class AuthService {
 
                 //  새로운 객체를 생성하여 안전하게 반환
                 resp.setHeader("Authorization","Bearer "+newAccessToken);
-                UserDTO.loginUser(user);
-                user.setPassword("");
-                return ResponseDTO.success(ResponseCode.LOGIN_REFRESH_TOKEN_SUCCESS,user);
+                UserDTO accessUser = UserDTO.loginUser(user);
+                //user.setPassword("");
+
+                return ResponseDTO.success(ResponseCode.LOGIN_REFRESH_TOKEN_SUCCESS,accessUser);
 
             }
 

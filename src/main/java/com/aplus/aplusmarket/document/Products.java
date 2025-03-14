@@ -26,4 +26,5 @@ public class Products {
     private double originalPrice;
     private double finalPrice;
     private String productUrl;
+    private String keywords;
 }

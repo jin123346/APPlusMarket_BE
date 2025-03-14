@@ -146,6 +146,9 @@ public class JwtTokenProvider {
                 //TODO: 블랙리스트 처리 로직
                 return false;
             }
+
+            log.info("토큰 유효성 존재함 {}",expiration);
+
             return true;
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
