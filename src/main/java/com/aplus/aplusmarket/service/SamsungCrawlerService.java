@@ -299,6 +299,7 @@ public class SamsungCrawlerService {
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class)
+                .switchIfEmpty(Mono.error(new RuntimeException("Samsung API 응답이 비어 있습니다!")))
                 .flatMap(responseBody -> processSamsungResponse(responseBody,keyword));
     }
 
@@ -362,7 +363,7 @@ public class SamsungCrawlerService {
                         .append("finalPrice", products.getFinalPrice())
                         .append("brand", brandDoc);
 
-                // ✅ Update 문서 생성
+                // Update 문서 생성
                 Bson update = Updates.combine(
                         Updates.set("productDetailCode", products.getProductDetailCode()),
                         Updates.set("productCode", products.getProductCode()),
@@ -375,11 +376,11 @@ public class SamsungCrawlerService {
                         Updates.set("brand",brandDoc)
                 );
 
-                // ✅ MongoDB의 UpdateOneModel 적용 (Upsert)
+                // MongoDB의 UpdateOneModel 적용 (Upsert)
                 bulkOperations.add(new UpdateOneModel<>(filter, update, new UpdateOptions().upsert(true)));
             }
 
-            // ✅ MongoDB `bulkWrite` 실행 (Document로 변환)
+            // MongoDB `bulkWrite` 실행 (Document로 변환)
             if (!bulkOperations.isEmpty()) {
                 // MongoCollection<Document> 가져오기
                 MongoCollection collection = mongoTemplate.getDb().getCollection("products");

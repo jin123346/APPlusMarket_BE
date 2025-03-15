@@ -146,9 +146,15 @@ public class KafkaNotificationConsumer {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
 
-            Mono<List<Products>> lists =samsungCrawlerService.searchSamsungProducts(message,10);
-
-            crawlStatusService.setCompleted(message);
+            samsungCrawlerService.searchSamsungProducts(message, 10)
+                    .doOnSuccess(products -> {
+                        log.info("검색 완료: {}", products.size());
+                        crawlStatusService.setCompleted(message); // ✅ Mono가 완료된 후 실행
+                    })
+                    .doOnError(error -> {
+                        log.error("Samsung 검색 실패!", error);
+                    })
+                    .subscribe(); // ✅ subscribe() 호출해야 Mono 실행됨!
 
 
         } catch (Exception e) {
