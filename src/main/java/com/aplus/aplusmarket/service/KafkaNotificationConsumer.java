@@ -1,6 +1,7 @@
 package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.document.Products;
+import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.CrawlData;
 import com.aplus.aplusmarket.dto.product.ProductEvent;
 import com.aplus.aplusmarket.entity.Brand;
@@ -24,6 +25,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
 import org.apache.kafka.clients.consumer.Consumer;
+import reactor.core.publisher.Mono;
 
 
 import java.time.Duration;
@@ -41,6 +43,7 @@ public class KafkaNotificationConsumer {
     private final SamsungCrawlerService samsungCrawlerService;
     private final ProductsRepository productsRepository;
     private final CategoryMapper categoryMapper;
+    private final CrawlStatusService crawlStatusService;
 
 
     @KafkaListener(topics = "product-events",groupId = "product-group")
@@ -128,6 +131,32 @@ public class KafkaNotificationConsumer {
                 productsRepository.save(savedProduct); // 중복이 아니라면 DB에 저장
                 log.info("Saved to DB: " + savedProduct);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    @KafkaListener(topics = "crawler-search-topic", groupId = "product-group")
+    public void searchConsume(String message) {
+        System.out.println("Received message: " + message);
+
+        // JSON 데이터를 Java 객체로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+
+            samsungCrawlerService.searchSamsungProducts(message, 10)
+                    .doOnSuccess(products -> {
+                        log.info("검색 완료: {}", products.size());
+                        crawlStatusService.setCompleted(message); // ✅ Mono가 완료된 후 실행
+                    })
+                    .doOnError(error -> {
+                        log.error("Samsung 검색 실패!", error);
+                    })
+                    .subscribe(); // ✅ subscribe() 호출해야 Mono 실행됨!
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }

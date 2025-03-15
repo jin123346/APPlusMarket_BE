@@ -16,6 +16,7 @@ public class ProductEventProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private static final String EVENTTOPIC = "product-events";
     private static final String CRAWLERTOPIC = "crawler-topic";
+    private static final String SEARCHTOPIC = "crawler-search-topic";
 
 
     public void sendProductEvent(ProductEvent event) {
@@ -32,7 +33,12 @@ public class ProductEventProducer {
         kafkaTemplate.send(CRAWLERTOPIC, eventJson);
     }
 
-    public void requestCrawlWithKeyword(){}
+    public void requestCrawlWithKeyword(String keyword){
+        log.info("Kafka로 크롤링 요청: {}", keyword);
+        kafkaTemplate.send(SEARCHTOPIC, keyword);
+
+
+    }
 
 
 
