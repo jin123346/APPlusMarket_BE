@@ -189,6 +189,7 @@ public enum ResponseCode {
 
     // 검색 관련
     SAMSUNG_SEARCH_SUCCESS(3010, HttpStatus.OK, "삼성 제품 검색 성공"),
+    SAMSUNG_SEARCH_IN_PROGRESS(3014, HttpStatus.OK, "삼성 제품 크롤링 중"),
     SAMSUNG_SEARCH_NOT_FOUND(3011, HttpStatus.NOT_FOUND, "검색된 제품이 없습니다."),
     SAMSUNG_SEARCH_FAILED(3012, HttpStatus.INTERNAL_SERVER_ERROR, "삼성 제품 검색 실패"),
     SAMSUNG_SEARCH_API_FAILED(3013, HttpStatus.INTERNAL_SERVER_ERROR, "삼성 API 검색 실패"),

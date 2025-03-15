@@ -32,11 +32,13 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -54,7 +56,6 @@ import reactor.core.scheduler.Schedulers;
 @Log4j2
 public class SamsungCrawlerService {
     private final ProductsRepository productsRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
 
     private final WebClient webClient = WebClient.builder()
             .baseUrl("https://sribsrch.ecom.samsung.com/estoresearch-api/v1/scom/sec/search")
@@ -65,6 +66,7 @@ public class SamsungCrawlerService {
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
     private final ProductEventProducer productEventProducer;
+    private final CrawlStatusService crawlStatusService;
 
 
     @Scheduled(cron = "0 0 0 * * Mon")
@@ -180,14 +182,66 @@ public class SamsungCrawlerService {
 
         log.info("검색단어 : {}",keyword);
         try{
-//            Query query = new Query();
-//            // name, productCode, productDetailCode 필드에 keyword 포함된 데이터 검색
-//            query.addCriteria(new Criteria().orOperator(
-//                    Criteria.where("name").regex(".*" + keyword + ".*"),
-//                    Criteria.where("productCode").regex(".*" + keyword + ".*"),
-//                    Criteria.where("productDetailCode").regex(".*" + keyword + ".*"),
-//                    Criteria.where("keywords").exists(true).regex(Pattern.compile(".*" + keyword + ".*", Pattern.CASE_INSENSITIVE))
-//            ));
+                Query query = new Query();
+                List<Criteria> criteriaList = new ArrayList<>();
+
+                String regexKeyword = ".*" + keyword + ".*";
+
+                // name, productCode, productDetailCode 필드 검색
+                criteriaList.add(Criteria.where("name").regex(regexKeyword, "i"));
+                criteriaList.add(Criteria.where("productCode").regex(regexKeyword, "i"));
+                criteriaList.add(Criteria.where("productDetailCode").regex(regexKeyword, "i"));
+
+
+                // keywords 필드가 존재하는 경우에만 regex 검색 추가
+                Criteria keywordCriteria = Criteria.where("keywords").regex(".*" + keyword + ".*", "i"); // i: 대소문자 무시
+
+
+                criteriaList.add(keywordCriteria);
+
+                //  OR 조건 추가
+                query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+                List<Products> products = mongoTemplate.find(query, Products.class);
+                log.info("검색 결과 : {}개", products.size());
+
+                if(!products.isEmpty()){
+                    log.info("첫번째 검색에서 가져옴 {}",products);
+                    return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS,products);
+                }
+
+
+
+                productEventProducer.requestCrawlWithKeyword(keyword);
+                crawlStatusService.setCrawling(keyword);
+
+                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_IN_PROGRESS);
+
+    //            Mono<List<Products>> lists = searchSamsungProducts(keyword,10);
+    //
+    //            if(lists.blockOptional().isEmpty()){
+    //                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
+    //            }
+    //
+    //            products = mongoTemplate.find(query, Products.class);
+    //            if (!products.isEmpty()) {
+    //                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS,products);
+    //            }
+
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new CustomException(ResponseCode.SAMSUNG_SEARCH_FAILED);
+
+        }
+
+      //  return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
+
+    }
+
+    public ResponseDTO searchCheckCrawl(String keyword) {
+
+        log.info("검색단어 : {}", keyword);
+        try {
 
             Query query = new Query();
             List<Criteria> criteriaList = new ArrayList<>();
@@ -209,33 +263,18 @@ public class SamsungCrawlerService {
             //  OR 조건 추가
             query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
             List<Products> products = mongoTemplate.find(query, Products.class);
-            log.info("검색 결과 : {}개", products.size());
+            log.info("크롤링 후 체크 검색 결과 : {}개", products.size());
 
-            if(!products.isEmpty()){
-                log.info("첫번째 검색에서 가져옴 {}",products);
-                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS,products);
-            }
-
-            Mono<List<Products>> lists = searchSamsungProducts(keyword,10);
-
-            if(lists.blockOptional().isEmpty()){
-                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
-            }
-
-            products = mongoTemplate.find(query, Products.class);
             if (!products.isEmpty()) {
-                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS,products);
+                log.info("두번째 검색에서 가져옴 {}", products);
+                return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_SUCCESS, products);
             }
 
+            return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
 
-        }catch (Exception e){
-            log.error(e.getMessage());
-            throw new CustomException(ResponseCode.SAMSUNG_SEARCH_FAILED);
-
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        return ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_NOT_FOUND);
-
     }
 
 
@@ -348,9 +387,12 @@ public class SamsungCrawlerService {
                 log.info(" Batch Upsert 완료 - {}", productsList);
             }
 
+
             return productsList;
         }).subscribeOn(Schedulers.boundedElastic());
     }
+
+
 
 
 //    public List<Products> searchSamsungProducts(String keyword, int requestCount) {
