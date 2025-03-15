@@ -29,6 +29,12 @@
         where product_id = #{productId}
     </select>
 
+    <select id="selectByProductId">
+        SELECT *
+        from tb_wish_list
+        where product_id = #{productId}
+    </select>
+
 
 
 

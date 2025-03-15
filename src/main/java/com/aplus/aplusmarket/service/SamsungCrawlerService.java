@@ -2,6 +2,7 @@ package com.aplus.aplusmarket.service;
 
 import com.aplus.aplusmarket.document.Products;
 import com.aplus.aplusmarket.dto.ResponseDTO;
+import com.aplus.aplusmarket.dto.product.CrawlData;
 import com.aplus.aplusmarket.entity.Brand;
 import com.aplus.aplusmarket.entity.Category;
 import com.aplus.aplusmarket.handler.CustomException;
@@ -32,6 +33,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -51,6 +54,8 @@ import reactor.core.scheduler.Schedulers;
 @Log4j2
 public class SamsungCrawlerService {
     private final ProductsRepository productsRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
     private final WebClient webClient = WebClient.builder()
             .baseUrl("https://sribsrch.ecom.samsung.com/estoresearch-api/v1/scom/sec/search")
             .build();
@@ -59,8 +64,10 @@ public class SamsungCrawlerService {
     private final MongoTemplate mongoTemplate;
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
+    private final ProductEventProducer productEventProducer;
 
 
+    @Scheduled(cron = "0 0 0 * * Mon")
     public void crawlSamsungProducts() {
         for (String url : SamsungCategoryMapper.CATEGORY_CURRENT_MAP.keySet()) {
             log.info("크롤링 할 페이지 : {}",url);
@@ -145,37 +152,21 @@ public class SamsungCrawlerService {
                 String productUrl = "https://www.samsung.com/sec" + product.getString("goodsDetailUrl"); // 상세 페이지 URL
 
 
-                Optional<Products> existingProduct = productsRepository.findByProductDetailCode(modelCode);
+                CrawlData crawlData = CrawlData.builder()
+                        .categoryName(categoryName)
+                        .brandName(samsungBrand.getName())
+                        .mdlNm(mdlNm)
+                        .modelCode(modelCode)
+                        .goodsId(goodsId)
+                        .name(name)
+                        .salePrice(salePrice)
+                        .originalPrice(originalPrice)
+                        .productUrl(productUrl)
+                        .build();
 
-                if(existingProduct.isPresent()){
-                    // 기존 제품 업데이트
-                    Products p = existingProduct.get();
-                    p.setOriginalPrice(Double.parseDouble(originalPrice));
-                    p.setFinalPrice(Double.parseDouble(salePrice));
-                    p.setProductUrl(productUrl);
-                    p.setName(name);
-                    p.setCategory(category);
-                    p.setBrand(samsungBrand);
-                    productsRepository.save(p);
-                    log.info("업데이트된 제품 : {}", p);
+                // Kafka로 전송할 JSON 객체 생성
 
-                }else{
-                    Products savedProduct = Products.builder()
-                            .category(category)
-                            .brand(samsungBrand)
-                            .originalPrice(Double.parseDouble(originalPrice))
-                            .goodsId(goodsId)
-                            .finalPrice(Double.parseDouble(salePrice))
-                            .productCode(mdlNm)
-                            .productDetailCode(modelCode)
-                            .name(name)
-                            .productUrl(productUrl)
-                            .build();
-                    productsRepository.save(savedProduct);
-                    System.out.println("제품명: " + name + ", 가격: " + originalPrice + "원, 링크: " + productUrl);
-
-
-                }
+               productEventProducer.sendCrawlerProduct(crawlData);
 
             }
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aplus.aplusmarket.mapper.product.NotificationItemMapper">
+    <insert id="insertNotificationItem">
+        insert into tb_notification_item ( product_id, user_id,event_type,  message ,is_read)
+        values (#{productId},#{userId},#{eventType},#{message},#{isRead})
+    </insert>
+
+    <select id="findByUserIdOrderByTimestampDesc">
+        select * from tb_notification_item where user_id = #{userId} and is_deleted = 1
+        order by timestamp desc
+    </select>
+
+    <update id="updateIsRead">
+        update tb_notification_item
+        set is_read = true
+        where id=#{id}
+    </update>
+    <update id="updateIsDeleted">
+        update tb_notification_item
+        set is_deleted = true
+        where id=#{id}
+    </update>
+</mapper>
