@@ -3,6 +3,7 @@ package com.aplus.aplusmarket.service;
 import com.aplus.aplusmarket.document.Products;
 import com.aplus.aplusmarket.dto.ResponseDTO;
 import com.aplus.aplusmarket.dto.product.FindProduct;
+import com.aplus.aplusmarket.dto.product.ProductEvent;
 import com.aplus.aplusmarket.dto.product.requests.ImageItemDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductModifyRequestDTO;
@@ -52,6 +53,8 @@ public class ProductService {
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
     private final String USER_DIR = System.getProperty("user.dir");
+    private final ProductEventProducer productEventProducer;
+
 
     //상품 이미지 등록
     @Transactional
@@ -323,7 +326,7 @@ public class ProductService {
     public ResponseDTO selectProductForModify(Long productId,Long userId){
         try {
 
-            Product product = productMapper.SelectProductByIdForModify(productId);
+            Product product = productMapper.SelectProductByIdForModify(productId).orElseThrow(() -> new CustomException(ResponseCode.PRODUCT_NOT_FOUND));
 
             log.info("수정할 product : {}",product);
             if(product.getSellerId() != userId){
@@ -353,7 +356,7 @@ public class ProductService {
             // DTO에 이미지 리스트 추가
             productDTO.setImages(imageDTOs);
 
-            return ResponseDTO.success(ResponseCode.PRODUCT_DETAIL_SUCCESS);
+            return ResponseDTO.success(ResponseCode.PRODUCT_DETAIL_SUCCESS,productDTO);
 
         }catch (Exception e){
             log.error(e.getMessage());
@@ -367,6 +370,10 @@ public class ProductService {
 
     @Transactional(rollbackFor = Exception.class)
     public ResponseDTO updateProduct(ProductModifyRequestDTO requestDTO){
+
+        Product product = productMapper.SelectProductByIdForModify(requestDTO.getId()).orElseThrow(() -> new CustomException(ResponseCode.PRODUCT_NOT_FOUND));
+
+
         try{
             String path= USER_DIR+"/"+uploadPath+requestDTO.getId().toString()+"/";
 
@@ -410,26 +417,42 @@ public class ProductService {
                 }
             }
             //DB 데이터 갱신
+            int oldPrice = product.getPrice();
+
+            product.setFindProductId(requestDTO.getFindProduct());
+            product.setBrand(requestDTO.getBrand());
+            product.setCategory(requestDTO.getCategory());
+            product.setProductName(requestDTO.getProductName());
+            product.setContent(requestDTO.getContent());
+            product.setTitle(requestDTO.getTitle());
+            product.setIsNegotiable(requestDTO.getIsNegotiable());
+            product.setUpdatedAt(LocalDateTime.now());
+            product.setPrice(requestDTO.getPrice());
+            product.setRegisterIp(requestDTO.getRegisterIp());
+            product.setIsPossibleMeetYou(requestDTO.getIsPossibleMeetYou());
 
 
-            //제품 정보 업데이트
-            Product product = Product.builder()
-                    .id(requestDTO.getId())
-                    .findProductId(requestDTO.getFindProduct())
-                    .brand(requestDTO.getBrand())
-                    .category(requestDTO.getCategory())
-                    .productName(requestDTO.getProductName())
-                    .content(requestDTO.getContent())
-                    .title(requestDTO.getTitle())
-                    .isNegotiable(requestDTO.getIsNegotiable())
-                    .updatedAt(LocalDateTime.now())
-                    .isPossibleMeetYou(requestDTO.getIsPossibleMeetYou())
-                    .price(requestDTO.getPrice())
-                    .registerIp(requestDTO.getRegisterIp())
-                    .build();
 
 
             boolean result = productMapper.updateProduct(product);
+            if (oldPrice != requestDTO.getPrice()) { // 가격이 변경된 경우
+                int newPrice = requestDTO.getPrice();
+                int resultPrice =  newPrice- oldPrice;
+                String message = "";
+                if (resultPrice ==0 ) {
+                    message = "상품이 업데이트 되었습니다.";
+                } else if (resultPrice > 0) {
+                    message = String.format("가격 하락! %d만큼 내렸어요", resultPrice);
+                }else{
+                    message = String.format("가격 상승ㅜㅜ %d만큼 올랐어요", resultPrice);
+                }
+
+
+
+                ProductEvent productEvent = new ProductEvent(product.getId(),"PRICE_UPDATED", message);
+                productEventProducer.sendProductEvent(productEvent);
+            }
+
 
             if (!result) {
                 throw new CustomException(ResponseCode.PRODUCT_UPDATE_FAILED);

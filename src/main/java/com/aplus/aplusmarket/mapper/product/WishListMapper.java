@@ -13,6 +13,6 @@ public interface WishListMapper {
     int deleteById(@Param("id") Long id);
     Optional<Long> selectWishList(@Param("productId") long productId, @Param("userId") long userId);
     List<ProductResponseCard> productWishList(@Param("userId") long userId);
-
+    List<WishList> selectByProductId(@Param("productId") Long productId);
     int countWishList(@Param("productId") Long productId);
 }

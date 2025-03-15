@@ -5,12 +5,13 @@ import com.aplus.aplusmarket.entity.ProductResponseCard;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface ProductMapper {
     boolean InsertProduct(Product product);
     Product SelectProductById(@Param("id") Long id,@Param("userId") Long userId);
-    Product SelectProductByIdForModify(Long id);
+    Optional<Product> SelectProductByIdForModify(Long id);
     List<Product> SelectAllProducts();
     boolean updateProduct(Product product);
     boolean DeleteProduct(Long id);

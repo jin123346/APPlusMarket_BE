@@ -129,7 +129,10 @@ public class ProductController {
             @PathVariable(value = "productId") Long productId,
             @PathVariable(value = "userId") Long userId
             ){
-        return ResponseEntity.ok().body(productService.selectProductForModify(productId,userId));
+
+        ResponseDTO responseDTO = productService.selectProductForModify(productId,userId);
+        log.info("조회 결과 {}",responseDTO);
+        return ResponseEntity.ok().body(responseDTO);
     }
 
     @PutMapping("/modify/{productId}/{userId}")
