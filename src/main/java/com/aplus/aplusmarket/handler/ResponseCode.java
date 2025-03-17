@@ -202,7 +202,7 @@ public enum ResponseCode {
     // 데이터 저장 관련
     SAMSUNG_PRODUCT_SAVE_SUCCESS(3030, HttpStatus.OK, "삼성 제품 저장 성공"),
     SAMSUNG_PRODUCT_SAVE_FAILED(3031, HttpStatus.INTERNAL_SERVER_ERROR, "삼성 제품 저장 실패"),
-
+    KAFKA_SEARCH_IN_ERROR(3032,HttpStatus.INTERNAL_SERVER_ERROR,"Kafka Consumer에서 예외 발생: "),
 
     // 결제 관련
     PAYMENT_SUCCESS(5000, HttpStatus.OK, "결제 성공"),

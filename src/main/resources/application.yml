@@ -45,7 +45,12 @@ spring:
             acks: all
             key-serializer: org.apache.kafka.common.serialization.StringSerializer
             value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+        listener:
+            ack-mode: record
+            missing-topics-fatal: false
+            concurrency: 3
+            type: batch
+            ack-count: 1
     data:
         mongodb:
             uri: mongodb://root:Qwe1234~!@43.202.32.28:27017/applus?authSource=admin

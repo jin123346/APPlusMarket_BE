@@ -37,6 +37,13 @@ public class CrawlerController {
     public ResponseEntity searchSamsung(@RequestParam String keyword){
         String decodedKeyword = URLDecoder.decode(keyword, StandardCharsets.UTF_8);
         System.out.println("디코딩된 검색어: " + decodedKeyword);
+        boolean isCrawl = crawlStatusService.isCrawling(decodedKeyword);
+
+        if(isCrawl){
+            ResponseDTO responseDTO = ResponseDTO.success(ResponseCode.SAMSUNG_SEARCH_IN_PROGRESS);
+            return ResponseEntity.ok().body(responseDTO);
+        }
+
         ResponseDTO responseDTO =  samsungCrawlerService.searchProductByKeyWord(decodedKeyword); // 검색 개수 최대 10개
 
         return ResponseEntity.ok().body(responseDTO);

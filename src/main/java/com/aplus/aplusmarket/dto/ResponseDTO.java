@@ -13,28 +13,35 @@ import lombok.*;
 @NoArgsConstructor
 public class ResponseDTO<T> {
 
-
     private  String status;
     private  int httpCode;
     private  int code;
     private  String message;
     private T data;
 
-
     public static <T> ResponseDTO<T> success(ResponseCode responseCode, T data) {
         return ResponseDTO.<T>builder()
                 .status("success")
-                .httpCode(responseCode.getCode())
+                .httpCode(responseCode.getHttpCode())
                 .code(responseCode.getCode())
                 .message(responseCode.getMessage())
                 .data(data)
+                .build();
+    }
+    public static ResponseDTO<?> error(ResponseCode responseCode, String customMessage) {
+        return ResponseDTO.builder()
+                .status("failed")
+                .httpCode(responseCode.getHttpCode())
+                .code(responseCode.getCode())
+                .message(customMessage)
+                .data(null)
                 .build();
     }
 
     public static <T> ResponseDTO<T> success(ResponseCode responseCode) {
         return ResponseDTO.<T>builder()
                 .status("success")
-                .httpCode(responseCode.getCode())
+                .httpCode(responseCode.getHttpCode())
                 .code(responseCode.getCode())
                 .message(responseCode.getMessage())
                 .data(null)
@@ -51,15 +58,7 @@ public class ResponseDTO<T> {
                 .build();
     }
 
-    public static ResponseDTO<?> error(ResponseCode responseCode, String customMessage) {
-        return ResponseDTO.builder()
-                .status("failed")
-                .httpCode(responseCode.getHttpCode())
-                .code(responseCode.getCode())
-                .message(customMessage)
-                .data(null)
-                .build();
-    }
+
 
     /*
     예시
