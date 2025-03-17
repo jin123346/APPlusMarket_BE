@@ -36,6 +36,7 @@ public class NotificationService {
 
     public void sendPastNotificationsToWebSocket(long userId) {
         List<NotificationItem> notifications = notificationItemMapper.findByUserIdOrderByTimestampDesc(userId);
+        log.info("과거 알림 전송 시작 to web socket {}",userId);
 
         if (!notifications.isEmpty()) {
             log.info("Sending past notifications to web socket {}",notifications);

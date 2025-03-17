@@ -15,9 +15,9 @@ public class MessageController {
 
     private final NotificationService notificationService;
 
-    @MessageMapping("/notifications/history")
-    public void sendPastNotifications(NotificationItem event) {
-
-        notificationService.sendPastNotificationsToWebSocket(event.getUserId());
-    }
+//    @MessageMapping("/notifications/history")
+//    public void sendPastNotifications(NotificationItem event) {
+//
+//        notificationService.sendPastNotificationsToWebSocket(event.getUserId());
+//    }
 }

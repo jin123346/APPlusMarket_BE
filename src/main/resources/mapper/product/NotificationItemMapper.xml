@@ -7,7 +7,7 @@
     </insert>
 
     <select id="findByUserIdOrderByTimestampDesc">
-        select * from tb_notification_item where user_id = #{userId} and is_deleted = 1
+        select * from tb_notification_item where user_id = #{userId} and is_deleted = 0
         order by timestamp desc
     </select>
 
