@@ -14,6 +14,7 @@ import com.aplus.aplusmarket.mapper.product.CategoryMapper;
 import com.aplus.aplusmarket.mapper.product.NotificationItemMapper;
 import com.aplus.aplusmarket.mapper.product.WishListMapper;
 import com.aplus.aplusmarket.repository.ProductsRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.Gson;
 import lombok.RequiredArgsConstructor;
@@ -131,8 +132,13 @@ public class KafkaNotificationConsumer {
                 productsRepository.save(savedProduct); // 중복이 아니라면 DB에 저장
                 log.info("Saved to DB: " + savedProduct);
             }
+        }catch (JsonProcessingException e) {
+            log.error("JSON 파싱 오류 발생: {}", e.getMessage());
+        } catch (NumberFormatException e) {
+            log.error("숫자 변환 오류 발생: {}", e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Kafka Consumer 처리 중 예외 발생", e);
+            throw new CustomException(ResponseCode.KAFKA_SEARCH_IN_ERROR); // **필요할 경우 CustomException 던짐**
         }
     }
 
@@ -144,7 +150,6 @@ public class KafkaNotificationConsumer {
 
         // JSON 데이터를 Java 객체로 변환
         ObjectMapper objectMapper = new ObjectMapper();
-        try {
 
             samsungCrawlerService.searchSamsungProducts(message, 10)
                     .doOnSuccess(products -> {
@@ -153,13 +158,13 @@ public class KafkaNotificationConsumer {
                     })
                     .doOnError(error -> {
                         log.error("Samsung 검색 실패!", error);
+                        throw new CustomException(ResponseCode.KAFKA_SEARCH_IN_ERROR);
+
                     })
                     .subscribe(); // ✅ subscribe() 호출해야 Mono 실행됨!
 
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
 
