@@ -8,7 +8,7 @@ import java.util.List;
 
 @Mapper
 public interface NotificationItemMapper {
-    NotificationItem insertNotificationItem(NotificationItem notificationItem);
+    void insertNotificationItem(NotificationItem notificationItem);
 
     List<NotificationItem>  findByUserIdOrderByTimestampDesc(@Param("userId") long  userId);
 }
