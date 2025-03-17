@@ -16,4 +16,5 @@ public class NotificationItem {
     private boolean isDeleted;
     private String timestamp;
 
+
 }

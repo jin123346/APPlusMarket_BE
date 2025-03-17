@@ -52,6 +52,7 @@ public class AuthService {
 
     private final MongoTemplate mongoTemplate;
     private final WishAndRecentService wishAndRecentService;
+    private final NotificationService notificationService;
 
     //로그인 서비스
 
@@ -119,6 +120,10 @@ public class AuthService {
                     wishAndRecentService.mergeGuestDataToUser(loginRequest.getTempUserId(),loginUser.getId());
 
                     log.info("로그인 성공 - 아이디: {}", loginRequest.getUid());
+
+
+                    notificationService.sendPastNotificationsToWebSocket(loginUser.getId());
+
                     return ResponseDTO.success(ResponseCode.LOGIN_SUCCESS,loginUser);
                 }
 
@@ -233,6 +238,7 @@ public class AuthService {
                 resp.setHeader("Authorization","Bearer "+newAccessToken);
                 UserDTO accessUser = UserDTO.loginUser(user);
                 //user.setPassword("");
+                notificationService.sendPastNotificationsToWebSocket(accessUser.getId());
 
                 return ResponseDTO.success(ResponseCode.LOGIN_REFRESH_TOKEN_SUCCESS,accessUser);
 
