@@ -27,6 +27,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
 import org.apache.kafka.clients.consumer.Consumer;
 import reactor.core.publisher.Mono;
+import org.springframework.kafka.support.Acknowledgment;
 
 
 import java.time.Duration;
@@ -47,48 +48,56 @@ public class KafkaNotificationConsumer {
     private final CrawlStatusService crawlStatusService;
 
 
-    @KafkaListener(topics = "product-events",groupId = "product-group")
-    public void productEventConsume(String message){
-        ProductEvent event = new Gson().fromJson(message, ProductEvent.class);
-        log.info("Receive Product Event : {}", event);
+    @KafkaListener(topics = "product-events",groupId = "product-group",containerFactory = "kafkaListenerContainerFactory" )
+    public void productEventConsume(String message,Acknowledgment acknowledgment){
+        try{
+            ProductEvent event = new Gson().fromJson(message, ProductEvent.class);
+            log.info("Receive Product Event : {}", event);
 
-        if("PRICE_UPDATED".equals(event.getEventType())){
-            List<WishList> interestingUsers = wishListMapper.selectByProductId(event.getProductId());
+            if("PRICE_UPDATED".equals(event.getEventType())){
+                List<WishList> interestingUsers = wishListMapper.selectByProductId(event.getProductId());
 
-            if (interestingUsers.isEmpty()) {
-                log.info("관심 있는 유저 없음. 알림 전송 생략.");
-                return;
+                if (interestingUsers.isEmpty()) {
+                    log.info("관심 있는 유저 없음. 알림 전송 생략.");
+                    return;
+                }
+
+
+                List<NotificationItem> notificationItems = new ArrayList<>();
+                log.info("관심 있는 유저 목록 : {}",interestingUsers);
+                Set<Long> processedUserIds = new HashSet<>();
+
+                for (WishList wishList : interestingUsers) {
+
+                    if (!processedUserIds.contains(wishList.getUserId())) {
+                        log.info("관심 있는 유저 : {}",wishList);
+
+                        NotificationItem item = NotificationItem.builder()
+                                .userId(wishList.getUserId())
+                                .productId(event.getProductId())
+                                .message(event.getMessage())
+                                .eventType(event.getEventType())
+                                .isRead(false)
+                                .isDeleted(false)
+                                .build();
+
+                        log.info("알림 insert   : {}", item);
+                        notificationItemMapper.insertNotificationItem(item);
+                        notificationItems.add(item);
+
+                        processedUserIds.add(wishList.getUserId()); //  중복 방지
+                    }
+                }
+
+                notificationService.sendNotificationBatch( notificationItems);
+
+
             }
-
-
-            List<NotificationItem> notificationItems = new ArrayList<>();
-            //websocket 알람
-            for(WishList wishList : interestingUsers){
-                NotificationItem item = NotificationItem.builder()
-                        .userId(wishList.getUserId())
-                        .productId(event.getProductId())
-                        .message(event.getMessage())
-                        .eventType(event.getEventType())
-                        .isRead(false)
-                        .isDeleted(false)
-                        .build();
-                notificationItemMapper.insertNotificationItem(item);
-
-
-
-
-                notificationItems.add(item);
-
-            }
-
-            notificationService.sendNotificationBatch( notificationItems);
-
-
-
-
-
-
+           acknowledgment.acknowledge();
+        } catch (Exception e) {
+            log.error("Kafka 메시지 처리 중 오류 발생: {}", e.getMessage());
         }
+
 
 
 
