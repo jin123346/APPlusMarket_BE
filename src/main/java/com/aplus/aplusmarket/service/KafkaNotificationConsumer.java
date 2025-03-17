@@ -55,6 +55,12 @@ public class KafkaNotificationConsumer {
         if("PRICE_UPDATED".equals(event.getEventType())){
             List<WishList> interestingUsers = wishListMapper.selectByProductId(event.getProductId());
 
+            if (interestingUsers.isEmpty()) {
+                log.info("관심 있는 유저 없음. 알림 전송 생략.");
+                return;
+            }
+
+
             List<NotificationItem> notificationItems = new ArrayList<>();
             //websocket 알람
             for(WishList wishList : interestingUsers){
@@ -66,15 +72,19 @@ public class KafkaNotificationConsumer {
                         .isRead(false)
                         .isDeleted(false)
                         .build();
-                notificationService.sendNotification(wishList.getUserId(), item);
+                notificationItemMapper.insertNotificationItem(item);
+
+
+
 
                 notificationItems.add(item);
 
             }
 
-            for(NotificationItem items:notificationItems){
-                notificationItemMapper.insertNotificationItem(items);
-            }
+            notificationService.sendNotificationBatch( notificationItems);
+
+
+
 
 
 

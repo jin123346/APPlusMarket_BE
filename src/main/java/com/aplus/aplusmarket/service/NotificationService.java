@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,13 +24,23 @@ public class NotificationService {
         messagingTemplate.convertAndSend(destination, event);
     }
 
+    public void sendNotificationBatch(List<NotificationItem> event){
+        event.stream()
+                .collect(Collectors.groupingBy(NotificationItem::getUserId)) // 🔹 유저별 그룹화
+                .forEach((userId, userNotifications) -> {
+                    String destination = "/topic/notification/" + userId;
+                    log.info(" Sending batch notifications to {}", destination);
+                    messagingTemplate.convertAndSend(destination, userNotifications); // ✅ 각 유저에게 개별 WebSocket 전송
+                });
+    }
+
     public void sendPastNotificationsToWebSocket(long userId) {
         List<NotificationItem> notifications = notificationItemMapper.findByUserIdOrderByTimestampDesc(userId);
 
         if (!notifications.isEmpty()) {
             log.info("Sending past notifications to web socket {}",notifications);
 
-            String destination = "/topic/notification/" + userId;
+            String destination = "/topic/notification/first/" + userId;
             messagingTemplate.convertAndSend(destination, notifications); // 리스트 형태로 전송
             System.out.println("과거 알림 전송 완료: " + notifications.size() + "개");
         } else {

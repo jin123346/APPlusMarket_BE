@@ -12,10 +12,7 @@ import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.dto.product.Product_ImagesDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductListResponseDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductResponseCardDTO;
-import com.aplus.aplusmarket.entity.Product;
-import com.aplus.aplusmarket.entity.ProductResponseCard;
-import com.aplus.aplusmarket.entity.Product_Images;
-import com.aplus.aplusmarket.entity.WishList;
+import com.aplus.aplusmarket.entity.*;
 import com.aplus.aplusmarket.handler.CustomException;
 import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.mapper.product.ProductImageMapper;
@@ -49,6 +46,7 @@ public class ProductService {
     private final FileService fileService;
     private final ObjectMapper objectMapper;
     private final WishListMapper wishListMapper;
+    private final NotificationService notificationService;
     //파일 업로드 경로
     @Value("${spring.servlet.multipart.location}")
     private String uploadPath;
@@ -437,20 +435,23 @@ public class ProductService {
             boolean result = productMapper.updateProduct(product);
             if (oldPrice != requestDTO.getPrice()) { // 가격이 변경된 경우
                 int newPrice = requestDTO.getPrice();
-                int resultPrice =  newPrice- oldPrice;
+                int resultPrice =  newPrice - oldPrice;
                 String message = "";
-                if (resultPrice ==0 ) {
+                if (resultPrice == 0 ) {
                     message = "상품이 업데이트 되었습니다.";
-                } else if (resultPrice > 0) {
-                    message = String.format("가격 하락! %d만큼 내렸어요", resultPrice);
+                } else if (resultPrice < 0) {
+                    message = String.format("가격 하락! %d만큼 내렸어요",  Math.abs(resultPrice));
                 }else{
-                    message = String.format("가격 상승ㅜㅜ %d만큼 올랐어요", resultPrice);
+                    message = String.format("가격 상승! %d만큼 올랐어요", resultPrice);
                 }
 
 
 
-                ProductEvent productEvent = new ProductEvent(product.getId(),"PRICE_UPDATED", message);
-                productEventProducer.sendProductEvent(productEvent);
+
+                ProductEvent productEvent = new ProductEvent(product.getId(), "PRICE_UPDATED", message);
+                productEventProducer.sendProductEvent(productEvent); // ✅ Kafka 이벤트 전송
+
+
             }
 
 
@@ -467,8 +468,6 @@ public class ProductService {
         }
 
     }
-
-
 
     public void fileUpload(List<MultipartFile> images , String dirPath, long id,int index){
         try{
