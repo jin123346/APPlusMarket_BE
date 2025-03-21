@@ -33,12 +33,12 @@ public class UserDTO {
 
     public User register() {
         return User.builder()
-                .uid(uid)
-                .password(password)
-                .email(email)
-                .hp(hp)
-                .birthday(birthday)
-                .name(name)
+                .uid(this.uid)
+                .password(this.password)
+                .email(this.email)
+                .hp(this.hp)
+                .birthday(this.birthday)
+                .name(this.name)
                 .status(this.status)
                 .payBalance(this.payBalance)
                 .currentRate(this.currentRate)
@@ -47,7 +47,7 @@ public class UserDTO {
                 .reportCount(0)
                 .currentRate(0)
                 .createdAt(createdAt)
-                .nickname(nickName)
+                .nickname(this.nickName)
                 .build();
 
 

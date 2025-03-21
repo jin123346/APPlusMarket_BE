@@ -10,4 +10,6 @@ public class LoginRequest {
     private String password;
     private String deviceInfo;
     private String tempUserId;
+
+
 }

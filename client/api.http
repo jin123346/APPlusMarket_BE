@@ -1,0 +1,19 @@
+
+
+# 1. member 로그인
+POST{{host}}/auth/login
+content-type: application/json
+
+{
+    "uid":"test",
+    "password":"1234",
+    "deviceInfo":"galaxy s23",
+    "tempUserId":"1"
+ }
+
+
+
+###
+
+# 2. Member 생성
+

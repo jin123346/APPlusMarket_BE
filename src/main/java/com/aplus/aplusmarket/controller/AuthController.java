@@ -25,8 +25,10 @@ import javax.xml.transform.OutputKeys;
 import java.util.Optional;
 
 /*
-    20024.01.27 하진희 user login/ register controller
-    20024.02.04 하진희 myinfo 부분 추가
+    2025.01.27 하진희 user login/ register controller
+    2025.02.01 하진희 refresh 자동 로그인 기능 구현
+    2025.02.05 하진희 myinfo 부분 추가
+    2025.02.06 하진희 회원탈퇴 기능 추가
  */
 
 @RestController
@@ -41,6 +43,13 @@ public class AuthController {
     private final UserService userService;
 
 
+    /**
+     * 로그인
+     * @param loginRequest
+     * @param resp
+     * @param request
+     * @return
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse resp, HttpServletRequest request) {
         log.info("Login request: " + loginRequest);
@@ -50,6 +59,13 @@ public class AuthController {
         return ResponseEntity.ok().body(response);
     }
 
+    /**
+     * 로그아웃
+     * @param refreshToken
+     * @param userId
+     * @param response
+     * @return
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@CookieValue(value = "refreshToken", required = false) String refreshToken,
                                     @RequestParam(value = "userId", required = false, defaultValue = "0") Long userId,
@@ -63,15 +79,27 @@ public class AuthController {
     }
 
 
+    /**
+     * 사용자 등록 (회원가입)
+     * @param userInfo
+     * @return
+     */
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody UserDTO userInfo){
         log.info("회원등록 시작");
+        log.info("userDTO.nickname = {}", userInfo.getNickName());
         ResponseDTO responseDTO = authService.insertUser(userInfo);
 
-        return ResponseEntity.ok().body(responseDTO);
+        return ResponseEntity.status(responseDTO.getHttpCode()).body(responseDTO);
     }
 
 
+    /**
+     *
+     * @param refreshToken
+     * @param resp
+     * @return
+     */
     @GetMapping("/refresh")
     public ResponseEntity refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken,HttpServletResponse resp){
         if(refreshToken == null){
@@ -93,6 +121,13 @@ public class AuthController {
 
 
     //나의 정보 기능
+
+    /**
+     *
+     * @param request
+     * @param refreshToken
+     * @return
+     */
     @GetMapping("/myInfo")
     public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken",required = false) String refreshToken){
         Long id =(Long)request.getAttribute("id");
@@ -125,6 +160,12 @@ public class AuthController {
     }
 
     // 나의 정보 수정 요청
+
+    /**
+     *
+     * @param myInfoUser
+     * @return
+     */
     @PostMapping("/myInfo")
     public ResponseEntity updateUserInfo(@RequestBody MyInfoUser myInfoUser){
 
@@ -133,6 +174,14 @@ public class AuthController {
         return ResponseEntity.ok().body(responseDTO);
     }
 
+    /**
+     *탈퇴하기 (soft delete)
+     * @param id
+     * @param request
+     * @param refreshToken
+     * @param resp
+     * @return
+     */
     @GetMapping("/withdrawal/{id}")
     public ResponseEntity updateWithdrawal(@PathVariable("id") long id,HttpServletRequest request,@CookieValue(value = "refreshToken", required = false) String refreshToken,HttpServletResponse resp){
        // ResponseDTO responseDTO = userService;
@@ -149,6 +198,12 @@ public class AuthController {
 
 
     //하진희 - 2025.03.02 이메일 인증 요청
+
+    /**
+     *
+     * @param email
+     * @return
+     */
     @PostMapping("/mail/verification")
     public ResponseEntity emailVerification(@RequestParam String email){
         if(email == null){
@@ -160,6 +215,12 @@ public class AuthController {
 
     }
 
+    /**
+     *
+     * @param code
+     * @param email
+     * @return
+     */
     @PostMapping("/mail/resend-verification-code")
     public ResponseEntity resendVerificationCode(@RequestParam String code,@RequestParam String email){
         if(code == null){
@@ -168,6 +229,18 @@ public class AuthController {
 
         return ResponseEntity.ok().body(userService.verifyCode(email,code));
 
+    }
+
+    /**
+     * 회원 DB 삭제
+     * @param uid
+     * @return
+     */
+
+    @DeleteMapping("/user/delete/{uid}")
+    public ResponseEntity deleteUser(@PathVariable("uid") String uid){
+        ResponseDTO responseDTO = authService.deleteUser(uid);
+        return ResponseEntity.status(responseDTO.getHttpCode()).body(responseDTO);
     }
 
 

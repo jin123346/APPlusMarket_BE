@@ -259,6 +259,7 @@ public class AuthService {
      * @param userDTO
      * @return
      */
+    @Transactional
     public ResponseDTO insertUser(UserDTO userDTO) {
         try {
             String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
@@ -266,8 +267,15 @@ public class AuthService {
             User savedUser = userDTO.register();
             userMapper.insertUser(savedUser);
             long id = savedUser.getId();
+            log.info("결과 id : {}",id);
+            if(id>0){
 
-            return ResponseDTO.success(ResponseCode.MEMBER_REGISTER_SUCCESS);
+                return ResponseDTO.success(ResponseCode.MEMBER_REGISTER_SUCCESS);
+
+            }else{
+
+                return ResponseDTO.error(ResponseCode.MEMBER_REGISTER_FAIL);
+            }
         } catch (Exception e) {
             log.error(e);
             throw new CustomException(ResponseCode.MEMBER_REGISTER_FAIL);
@@ -395,4 +403,23 @@ public class AuthService {
         }
 
     }
+
+
+    public ResponseDTO deleteUser(String uid){
+        try{
+            Optional<User> opt = userMapper.selectUserByUid(uid);
+            if(opt.isPresent()){
+                userMapper.deleteUser(uid);
+                return ResponseDTO.success(ResponseCode.MEMBER_DELETE_SUCCESS);
+            }
+
+            return ResponseDTO.error(ResponseCode.MEMBER_DELETE_FAIL);
+
+
+        }catch (Exception e){
+            throw new CustomException(ResponseCode.MEMBER_DELETE_FAIL);
+
+        }
+    }
+
 }

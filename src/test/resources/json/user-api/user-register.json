@@ -1,0 +1,9 @@
+{
+  "uid":  "test111",
+  "password" : "1234",
+  "email" : "test2@email.com",
+  "hp": "01022222222",
+  "name": "test23",
+  "nickName": "test23",
+  "birthday" : "1999-11-11T00:00:00"
+}
