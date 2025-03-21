@@ -1,0 +1,64 @@
+= AplusMarket API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+
+[[User-API]]
+== User API
+
+'''
+
+
+
+[[User-로그인]]
+=== User 로그인
+실행
+include::{snippets}/auth-controller-test/login/curl-request.adoc[]
+include::{snippets}/auth-controller-test/login/http-request.adoc[]
+
+결과
+include::{snippets}/auth-controller-test/login/http-response.adoc[]
+include::{snippets}/auth-controller-test/login/response-body.adoc[]
+
+[[User-로그아웃]]
+=== User 로그아웃
+실행
+include::{snippets}/auth-controller-test/logout/curl-request.adoc[]
+include::{snippets}/auth-controller-test/logout/http-request.adoc[]
+
+결과
+include::{snippets}/auth-controller-test/logout/http-response.adoc[]
+include::{snippets}/auth-controller-test/logout/response-body.adoc[]
+
+[[User-회원가입]]
+=== User 회원가입
+실행
+include::{snippets}/auth-controller-test/register/curl-request.adoc[]
+include::{snippets}/auth-controller-test/register/http-request.adoc[]
+
+결과
+include::{snippets}/auth-controller-test/register/http-response.adoc[]
+include::{snippets}/auth-controller-test/register/response-body.adoc[]
+
+=== User 회원탈퇴
+
+
+=== User 회원정보조회
+
+
+=== User 회원 정보 수정
+
+
+
+=== User 아이디찾기 조회
+
+=== User 비밀번호찾기 조회
+
+=== User 비밀번호 변경
+
+
+

@@ -75,7 +75,11 @@ spring:
                   auth: ture
                   starttls:
                       enable: true
-
+    junit:
+        jupiter:
+            test instance:
+                lifecycle:
+                    default= per_method:
 
 mybatis:
     mapper-locations: classpath:mapper/**/*.xml  # 매퍼 XML 파일 경로

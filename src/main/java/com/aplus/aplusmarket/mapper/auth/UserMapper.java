@@ -24,6 +24,7 @@ public interface UserMapper {
     Long selectUserByUidAndEmail(@Param("uid") String uid, @Param("email") String email);
     Boolean userIsExist(@Param("id") Long id);
     void insertUser(User user);
+    void deleteUser(@Param("uid") String uid);
     int updateUserById(@Param("id") long id
             , @Param("email") String email
             , @Param("hp") String hp

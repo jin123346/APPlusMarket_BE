@@ -33,7 +33,7 @@ public enum ResponseCode {
     MEMBER_REGISTER_SUCCESS(1100, HttpStatus.CREATED, "회원가입 성공"),
     MEMBER_EMAIL_DUPLICATE(1101, HttpStatus.BAD_REQUEST, "이메일 중복"),
     MEMBER_TERMS_NOT_AGREED(1102, HttpStatus.BAD_REQUEST, "약관 미동의"),
-    MEMBER_REGISTER_FAIL(1103, HttpStatus.CREATED, "회원가입 실패"),
+    MEMBER_REGISTER_FAIL(1103, HttpStatus.BAD_REQUEST, "회원가입 실패"),
     MEMBER_DELETE_SUCCESS(1104, HttpStatus.OK, "회원탈퇴 성공"),
     MEMBER_DELETE_FAIL(1105, HttpStatus.INTERNAL_SERVER_ERROR, "회원탈퇴 실패"),
     MEMBER_ID_NOT_MATCH_TOKEN(1106, HttpStatus.INTERNAL_SERVER_ERROR, "회원 탈퇴 id값이 토큰과 불일치"),
