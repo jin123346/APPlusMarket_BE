@@ -48,13 +48,15 @@ asciidoctor {
 
 bootJar {
     dependsOn asciidoctor
-    from(layout.buildDirectory.dir("generated-snippets"))
-        into '/static/docs'
-
+    from(layout.buildDirectory.dir("generated-snippets")){
+    into '/static/docs'
+    }
 
     from(asciidoctor.outputDir) {
-        into '/BOOT-INF/classes/static/docs/'
+        into 'static/docs'
     }
+
+
 }
 
 

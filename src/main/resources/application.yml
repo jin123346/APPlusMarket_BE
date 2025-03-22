@@ -1,6 +1,9 @@
 spring:
     application:
         name: Aplusmarket
+    web:
+        resources:
+            static-locations: classpath:/static/
     jackson:
         time-zone: Asia/Seoul
     devtools:
