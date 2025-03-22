@@ -32,7 +32,7 @@ public interface UserMapper {
             , @Param("nickName") String nickName);
     int updatePassById(@Param("id") Long id, @Param("password") String password);
     int updateProfileImage(@Param("id") Long id, @Param("profileImg") String profileImg);
-    int updateUserWithdrawal(@Param("id") Long id,@Param("deletedAt") LocalDateTime birthday,@Param("status") String status);
+    int updateUserWithdrawal(@Param("id") Long id,@Param("deletedAt") LocalDateTime deletedAt,@Param("status") String status);
 
 
 }

@@ -6,6 +6,8 @@ import com.aplus.aplusmarket.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -13,11 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 public class MessageController {
 
-    private final NotificationService notificationService;
 
-//    @MessageMapping("/notifications/history")
-//    public void sendPastNotifications(NotificationItem event) {
-//
-//        notificationService.sendPastNotificationsToWebSocket(event.getUserId());
-//    }
+
+        @GetMapping("/api/docs")
+        public String redirectToDocs() {
+            return "redirect:/docs/index.html";
+        }
+
+
+
 }

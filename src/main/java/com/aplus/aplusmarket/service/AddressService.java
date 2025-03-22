@@ -69,9 +69,10 @@ public class AddressService {
                 addressBookMapper.updateAddressIsDefault(addressBook.getUserId());
             }
 
-            int result = addressBookMapper.insertAddress(addressBook);
+            long result = addressBookMapper.insertAddress(addressBook);
             if(result>0){
-                return ResponseDTO.success(ResponseCode.ADDRESS_CREATE_SUCCESS);
+                Long generatedId = addressBook.getId();
+                return ResponseDTO.success(ResponseCode.ADDRESS_CREATE_SUCCESS,generatedId);
             }
 
             return ResponseDTO.error(ResponseCode.ADDRESS_CREATE_FAILED);

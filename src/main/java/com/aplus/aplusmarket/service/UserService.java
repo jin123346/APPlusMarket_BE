@@ -188,7 +188,7 @@ public class UserService {
                 return ResponseDTO.error(ResponseCode.MEMBER_PASS_UPDATE_FAIL);
 
             }
-            return ResponseDTO.success(ResponseCode.MEMBER_FIND_PASS_SUCCESS);
+            return ResponseDTO.success(ResponseCode.MEMBER_PASS_UPDATE_SUCCESS);
 
 
         }catch (Exception e){
