@@ -1,0 +1,11 @@
+{
+  "userId":  10,
+  "isDefault":  true,
+  "title":"회사",
+  "message" : "도착시 연락 부탁드립니다.",
+  "receiverName" : "받는 사람 이름",
+  "receiverPhone" : "받는 사람 폰 번호",
+  "postcode" : "123456",
+  "address1" : "부산시 부산진구 부전동",
+  "address2" : "부전시장 상가 2층"
+}

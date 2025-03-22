@@ -24,6 +24,17 @@ include::{snippets}/auth-controller-test/login/http-request.adoc[]
 include::{snippets}/auth-controller-test/login/http-response.adoc[]
 include::{snippets}/auth-controller-test/login/response-body.adoc[]
 
+[[User-refresh]]
+=== User refresh
+실행
+include::{snippets}/auth-controller-test/refresh/curl-request.adoc[]
+include::{snippets}/auth-controller-test/refresh/http-request.adoc[]
+
+결과
+include::{snippets}/auth-controller-test/refresh/http-response.adoc[]
+include::{snippets}/auth-controller-test/refresh/response-body.adoc[]
+
+
 [[User-로그아웃]]
 === User 로그아웃
 실행
@@ -44,21 +55,113 @@ include::{snippets}/auth-controller-test/register/http-request.adoc[]
 include::{snippets}/auth-controller-test/register/http-response.adoc[]
 include::{snippets}/auth-controller-test/register/response-body.adoc[]
 
+[[User-회원탈퇴]]
 === User 회원탈퇴
+실행
+include::{snippets}/auth-controller-test/update-withdrawal/curl-request.adoc[]
+include::{snippets}/auth-controller-test/update-withdrawal/http-request.adoc[]
+
+결과
+include::{snippets}/auth-controller-test/update-withdrawal/http-response.adoc[]
+include::{snippets}/auth-controller-test/update-withdrawal/response-body.adoc[]
 
 
+[[User-회원정보조회]]
 === User 회원정보조회
+실행
+include::{snippets}/auth-controller-test/get-my-info/curl-request.adoc[]
+include::{snippets}/auth-controller-test/get-my-info/http-request.adoc[]
 
+결과
+include::{snippets}/auth-controller-test/get-my-info/http-response.adoc[]
+include::{snippets}/auth-controller-test/get-my-info/response-body.adoc[]
 
+[[User-회원정보수정]]
 === User 회원 정보 수정
+실행
+include::{snippets}/auth-controller-test/update-user-info/curl-request.adoc[]
+include::{snippets}/auth-controller-test/update-user-info/http-request.adoc[]
 
+결과
+include::{snippets}/auth-controller-test/update-user-info/http-response.adoc[]
+include::{snippets}/auth-controller-test/update-user-info/response-body.adoc[]
 
-
+[[User-아이디찾기]]
 === User 아이디찾기 조회
+실행
+include::{snippets}/user-controller-test/find-uid/curl-request.adoc[]
+include::{snippets}/user-controller-test/find-uid/http-request.adoc[]
 
+결과
+include::{snippets}/user-controller-test/find-uid/http-response.adoc[]
+include::{snippets}/user-controller-test/find-uid/response-body.adoc[]
+
+[[User-비밀번호찾기]]
 === User 비밀번호찾기 조회
+실행
+include::{snippets}/user-controller-test/find-pass/curl-request.adoc[]
+include::{snippets}/user-controller-test/find-pass/http-request.adoc[]
 
+결과
+include::{snippets}/user-controller-test/find-pass/http-response.adoc[]
+include::{snippets}/user-controller-test/find-pass/response-body.adoc[]
+
+[[User-비밀번호]]
 === User 비밀번호 변경
 
+실행
+include::{snippets}/user-controller-test/change-pass/curl-request.adoc[]
+include::{snippets}/user-controller-test/change-pass/http-request.adoc[]
+
+결과
+include::{snippets}/user-controller-test/change-pass/http-response.adoc[]
+include::{snippets}/user-controller-test/change-pass/response-body.adoc[]
 
 
+[[User-주소등록]]
+=== User 주소등록
+
+실행
+include::{snippets}/user-controller-test/insert-address/curl-request.adoc[]
+include::{snippets}/user-controller-test/insert-address//http-request.adoc[]
+
+결과
+include::{snippets}/user-controller-test/insert-address//http-response.adoc[]
+include::{snippets}/user-controller-test/insert-address//response-body.adoc[]
+
+
+[[User-주소리스트]]
+=== User 주소리스트
+
+실행
+include::{snippets}/user-controller-test/get-address-list/curl-request.adoc[]
+include::{snippets}/user-controller-test/get-address-list/http-request.adoc[]
+
+결과
+include::{snippets}/user-controller-test/get-address-list/http-response.adoc[]
+include::{snippets}/user-controller-test/get-address-list/response-body.adoc[]
+
+
+[[User-주소수정]]
+=== User 주소수정
+
+실행
+include::{snippets}/user-controller-test/modify-address/curl-request.adoc[]
+include::{snippets}/user-controller-test/modify-address/http-request.adoc[]
+
+결과
+include::{snippets}/user-controller-test/modify-address/http-response.adoc[]
+include::{snippets}/user-controller-test/modify-address/response-body.adoc[]
+
+
+
+[[User-주소삭제]]
+=== User 주소삭제
+
+실행
+include::{snippets}/user-controller-test/delete-address/curl-request.adoc[]
+include::{snippets}/user-controller-test/delete-address/http-request.adoc[]
+
+결과
+include::{snippets}/user-controller-test/delete-address/http-response.adoc[]
+include::{snippets}/user-controller-test/delete-address/response-body.adoc[]

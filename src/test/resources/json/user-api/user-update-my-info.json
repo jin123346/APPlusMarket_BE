@@ -1,0 +1,10 @@
+{
+    "id" : 10,
+    "uid" : "test",
+    "nickName" : "test",
+    "name" : "test",
+    "birthDay" : "1999-12-12T15:57:51",
+    "hp" : "01011111111",
+    "email" : "test@gmail.com",
+    "profileImg" : null
+ }

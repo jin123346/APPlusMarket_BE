@@ -10,7 +10,7 @@ import java.util.List;
 public interface AddressBookMapper {
 
     List<AddressBook> findByUserId(Long userId);
-    int insertAddress(AddressBook addressBook);
+    long insertAddress(AddressBook addressBook);
     void updateAddressIsDefault(Long userid);
     int updateAddressForModify(AddressBook addressBook);
     int deleteAddressById(Long id);

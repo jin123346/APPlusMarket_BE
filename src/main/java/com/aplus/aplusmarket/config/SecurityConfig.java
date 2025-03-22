@@ -51,6 +51,7 @@ public class SecurityConfig  implements WebMvcConfigurer {
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,myUserDetailsService), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/docs/**").permitAll()
                         .requestMatchers("/**").permitAll()// 인증 없이 허용할 경로
                         .anyRequest().permitAll()
                 //.anyRequest().authentication()  // 나머지 요청은 인증 필요

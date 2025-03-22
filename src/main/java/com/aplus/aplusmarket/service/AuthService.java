@@ -15,9 +15,11 @@ import com.aplus.aplusmarket.util.TokenEncrpytor;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.coyote.Response;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -405,11 +407,52 @@ public class AuthService {
     }
 
 
+    public ResponseDTO revokeUser(long id,String insertPass){
+        log.info("회원복구 시작");
+        try{
+            boolean isExist = userMapper.userIsExist(id);
+            if(!isExist){
+                log.info("User is not exist ");
+
+                return ResponseDTO.error(ResponseCode.MEMBER_NOT_FOUND);
+            }
+
+           User user= userMapper.selectUserById(id).orElseThrow(() -> new CustomException(ResponseCode.MEMBER_NOT_FOUND));
+            if(!user.getStatus().equals("DeActive")){
+                log.info("User is not DeActive ");
+                return ResponseDTO.error(ResponseCode.MEMBER_FIND_ID_NOT_FOUND);
+            }
+            log.info("User is not deActive ");
+
+            boolean isEqual = passwordEncoder.matches(insertPass,user.getPassword());
+
+            if(!isEqual){
+                return ResponseDTO.error(ResponseCode.MEMBER_FIND_ID_NOT_FOUND);
+            }
+
+            log.info("User {}",user);
+            int result = userMapper.updateUserWithdrawal(id, null,"Active");
+
+            if(result != 1){
+                return ResponseDTO.error(ResponseCode.MEMBER_UPDATE_FAIL);
+            }
+
+            return ResponseDTO.success(ResponseCode.MEMBER_UPDATE_SUCCESS);
+        }catch (Exception e){
+            log.error(e);
+            throw new CustomException(ResponseCode.MEMBER_UPDATE_FAIL);
+        }
+
+    }
+
+
     public ResponseDTO deleteUser(String uid){
         try{
             Optional<User> opt = userMapper.selectUserByUid(uid);
             if(opt.isPresent()){
                 userMapper.deleteUser(uid);
+
+                log.info("회원삭제 성공!!");
                 return ResponseDTO.success(ResponseCode.MEMBER_DELETE_SUCCESS);
             }
 

@@ -129,13 +129,15 @@ public class AuthController {
      * @return
      */
     @GetMapping("/myInfo")
-    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken",required = false) String refreshToken){
-        Long id =(Long)request.getAttribute("id");
-        String uid="";
-        ResponseDTO responseDTO;
+    public ResponseEntity getMyInfo(HttpServletRequest request,@CookieValue(value = "refreshToken",required = false) String refreshToken,@RequestParam(value = "userId") Long userId){
+
         if(refreshToken == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseDTO.error(ResponseCode.LOGIN_REQUIRED));
         }
+        Long id =(Long)request.getAttribute("id");
+        String uid="";
+        ResponseDTO responseDTO;
+
         log.info("토큰에서 추출된 id : {} ,  쿠키에 저장된 refreshToken : {}",id,refreshToken);
         if(id == null || id == 0){
              uid = authService.getIdWithRefreshToken(refreshToken);
@@ -192,6 +194,16 @@ public class AuthController {
 
         ResponseDTO responseDTO = authService.updateByUserForWithdrawal(id,refreshToken,resp);
 
+
+        return ResponseEntity.ok().body(responseDTO);
+    }
+
+
+
+    @PostMapping("/revoke")
+    public ResponseEntity revokeUser(@RequestBody UserDTO userDTO){
+        // ResponseDTO responseDTO = userService;
+        ResponseDTO responseDTO = authService.revokeUser(userDTO.getId(),userDTO.getPassword());
 
         return ResponseEntity.ok().body(responseDTO);
     }
