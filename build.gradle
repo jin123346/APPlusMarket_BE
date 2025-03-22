@@ -6,6 +6,10 @@ plugins {
 
 }
 
+jar {
+    enabled = false // 반드시 필요!
+}
+
 group = 'com.Aplus'
 version = '0.0.2-SNAPSHOT'
 
@@ -45,11 +49,11 @@ asciidoctor {
 bootJar {
     dependsOn asciidoctor
     from(layout.buildDirectory.dir("generated-snippets"))
-        into 'static/docs'
+        into '/static/docs'
 
 
     from(asciidoctor.outputDir) {
-        into ''
+        into '/BOOT-INF/classes/static/docs/'
     }
 }
 
