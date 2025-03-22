@@ -38,13 +38,20 @@ test {
 asciidoctor {
     inputs.dir snippetsDir
     dependsOn test
+    attributes 'snippets': snippetsDir
+
 }
 
 bootJar {
     dependsOn asciidoctor
     from(layout.buildDirectory.dir("generated-snippets"))
         into 'static/docs'
+
+
+    from(asciidoctor.outputDir) {
+        into ''
     }
+}
 
 
 
