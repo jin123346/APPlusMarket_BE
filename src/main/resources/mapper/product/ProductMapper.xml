@@ -182,17 +182,15 @@
                  LEFT JOIN tb_product_image img
                            ON p.id = img.product_id AND img.sequence = 0
         WHERE p.status = 'Active'
-        <if test="lastIndex != null and lastIndex != '' and lastIndex != 0">
-            And p.id &lt; #{lastIndex}
-        </if>
         <if test="keyword != null and keyword != ''">
             AND (p.title  LIKE CONCAT('%', #{keyword}, '%') OR p.product_name LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <if test="brand != null and brand != ''">
             AND (p.brand = #{brand})
         </if>
-        ORDER BY p.reload_at DESC
+        ORDER BY p.reload_at DESC , p.id DESC
             LIMIT #{pageSize}
+        OFFSET #{offset}
     </select>
 
     <select id="countProductsForState" resultType="Long">
@@ -206,6 +204,5 @@
         <if test="brand != null and brand != ''">
             AND (p.brand = #{brand})
         </if>
-        ORDER BY p.reload_at DESC
     </select>
 </mapper>

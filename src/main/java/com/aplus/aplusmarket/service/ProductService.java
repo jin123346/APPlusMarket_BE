@@ -201,32 +201,35 @@ public class ProductService {
 //    }
 
     //상품 페이징 처리 기능 (메인 화면)
-    public ResponseDTO selectProductsByPage(int lastIndex, int pageSize,String keyword,String brand) {
+    public ResponseDTO selectProductsByPage(int page, int pageSize,String keyword,String brand) {
         try {
             long total = productMapper.countProductsForState("Active",brand,keyword);
+            log.info("총 제품 갯수 : {}",total);
             int totalPage = (int) Math.ceil((double) total / pageSize);
-            List<ProductResponseCard> dtoList = productMapper.SelectProductsPage(pageSize, lastIndex,brand,keyword);
+            int offset = (page) * pageSize;
+            List<ProductResponseCard> dtoList = productMapper.SelectProductsPage(pageSize, offset,brand,keyword);
 
             List<ProductResponseCardDTO> products = dtoList.stream()
                     .map(this::toDTO)
                     .collect(Collectors.toList());
 
 
-            long newLastIndex = 0;
-            if(!products.isEmpty()){
-                newLastIndex = products.get(products.size()-1).getId();
-            }
 
-            log.info("Products (lastIndex: " + lastIndex + ", PageSize: " + pageSize + "): " + products);
+
+            log.info("Products (page: " + page + ", PageSize: " + pageSize + ", totalPage"+ totalPage +"): " + products);
+
+            boolean isLast = ((long) (page + 1) * pageSize >= total);
             ProductListResponseDTO listResponseDTO = ProductListResponseDTO.builder()
-                    .isFirst(lastIndex == 0)
-                    .lastIndex(newLastIndex)
+                    .isFirst(page == 0)
+                    .lastIndex(0)
                     .size(pageSize)
-                    .isLast(products.size() != pageSize)
+                    .isLast(isLast)
                     .totalPage(totalPage)
                     .products(products)
+                    .page(page)
                     .build();
-            log.info("새로운 lastIndex : {}",newLastIndex);
+
+
 
             return ResponseDTO.success(ResponseCode.PRODUCT_LIST_SUCCESS, listResponseDTO);
         } catch (Exception e) {

@@ -18,6 +18,7 @@ public class ProductListResponseDTO {
     private long lastIndex;
     private int size;
     private int totalPage;
+    private int page;
     private List<ProductResponseCardDTO> products;
 
 
