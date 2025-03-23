@@ -24,8 +24,6 @@ public class RedisController {
     public void addRecentProduct(@RequestBody ProductCardDTO dto, HttpServletRequest request){
 
         wishAndRecentService.addRecentList(dto);
-
-
     }
 
     @GetMapping("/recent/list")

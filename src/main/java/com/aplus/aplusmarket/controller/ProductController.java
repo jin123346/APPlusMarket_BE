@@ -46,13 +46,6 @@ public class ProductController {
     private final ProductService productService;
     private final WishAndRecentService wishAndRecentService;
 
-    //상품 전체 가지고 오기 (사용하지 않습니다) getProducts로 상품 리스트 가지고 오는걸로 변경
-//    @GetMapping("/list")
-//    public List<Product> selectAllProducts() {
-//        List<Product> product = productService.selectAllProducts();
-//        log.info("products : " + product);
-//        return product;
-//    }
     //선택한 상품 정보 가지고 오기
     @GetMapping("/{id}")
     public ResponseDTO selectProductById(@PathVariable(value = "id") String id,@RequestParam(required = false) Long userId) {
@@ -74,17 +67,11 @@ public class ProductController {
         return ResponseEntity.ok().body(responseDTO);
     }
 
-//    //상품 삭제(프론트 기능 없습니다 현재)
-//    @DeleteMapping("/delete/{id}/{userId}")
-//    public boolean deleteProductById(@PathVariable(value = "id") String id,@PathVariable(value = "userId") Long userId) {
-//        boolean check = productService.deleteProductById(id,userId);
-//        return check;
-//    }
-    
+
     //상품 페이징 처리 (메인 홈 화면만 출력되고 있습니다)
     @GetMapping("/listpage")
     public ResponseDTO  getProducts(
-            @RequestParam (defaultValue = "0") int lastIndex,
+            @RequestParam (defaultValue = "0") int page,
             @RequestParam (defaultValue = "6") int pageSize,
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String keyword){
@@ -98,7 +85,7 @@ public class ProductController {
         }
         log.info("요청한 리스트  keyword : {} , brand :{}", keyword, brand);
 
-        return productService.selectProductsByPage(lastIndex,pageSize,keyword,brand);
+        return productService.selectProductsByPage(page,pageSize,keyword,brand);
     }
 
 
@@ -118,7 +105,7 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}/{status}")
-    public ResponseEntity reloadProduct(
+    public ResponseEntity updateStatusForProduct(
             @PathVariable(value = "productId") Long productId,
             @PathVariable(value = "status") String status){
         return ResponseEntity.ok().body(productService.updateStatus(productId,status));
