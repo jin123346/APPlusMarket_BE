@@ -69,7 +69,7 @@ public class SamsungCrawlerService {
     private final CrawlStatusService crawlStatusService;
 
 
-    @Scheduled(cron = "0 0 0 * * Mon")
+    //@Scheduled(cron = "0 0 0 * * Mon")
     public void crawlSamsungProducts() {
         for (String url : SamsungCategoryMapper.CATEGORY_CURRENT_MAP.keySet()) {
             log.info("크롤링 할 페이지 : {}",url);

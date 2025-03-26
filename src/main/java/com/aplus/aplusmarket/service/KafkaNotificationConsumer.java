@@ -104,7 +104,7 @@ public class KafkaNotificationConsumer {
     }
 
     @KafkaListener(topics = "crawler-topic", groupId = "product-group")
-    public void consume(String message) {
+    public void consume(String message ,Acknowledgment acknowledgment) {
         System.out.println("Received message: " + message);
 
         // JSON 데이터를 Java 객체로 변환
@@ -127,6 +127,7 @@ public class KafkaNotificationConsumer {
             } else {
 
                 Brand samsungBrand = new Brand(1L, "삼성");
+                log.info("검색할 카테고리 이름 : {}",data.getCategoryName());
                 Optional<Category> opt = categoryMapper.selectCategoryByName(data.getCategoryName());
                 Category category = Category.builder()
                         .categoryName(data.getCategoryName())
@@ -151,6 +152,8 @@ public class KafkaNotificationConsumer {
                 productsRepository.save(savedProduct); // 중복이 아니라면 DB에 저장
                 log.info("Saved to DB: " + savedProduct);
             }
+            acknowledgment.acknowledge();
+
         }catch (JsonProcessingException e) {
             log.error("JSON 파싱 오류 발생: {}", e.getMessage());
         } catch (NumberFormatException e) {

@@ -1,0 +1,13 @@
+{
+  "title": "글제목 수정",
+  "productName": "상품이름 수정",
+  "content" : "글 내용 수정",
+  "price" : 13000000,
+  "sellerId" : 10,
+  "isNegotiable" : true,
+  "isPossibleMeetYou" : true,
+  "category" : "노트북",
+  "brand" : "삼성",
+  "findProduct" : null
+
+}

@@ -61,7 +61,6 @@ public class WishAndRecentService {
 
             if(result == 0 ){
                 return ResponseDTO.error(ResponseCode.WISH_UPDATE_FAILED);
-
             }
             return ResponseDTO.success(ResponseCode.WISH_UPDATE_SUCCESS);
         }catch (Exception e){

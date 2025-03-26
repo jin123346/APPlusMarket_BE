@@ -31,4 +31,7 @@
         WHERE id= #{itemId}
     </update>
 
+    <delete id="deleteByProductId">
+        delete from tb_product_image where product_id = #{productId}
+    </delete>
 </mapper>

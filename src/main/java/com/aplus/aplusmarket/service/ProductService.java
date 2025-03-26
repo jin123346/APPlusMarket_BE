@@ -97,7 +97,7 @@ public class ProductService {
             }else {
                 throw new CustomException(ResponseCode.PRODUCT_IMAGE_NOT_FOUND);
             }
-            return ResponseDTO.success(ResponseCode.PRODUCT_REGISTER_SUCCESS);
+            return ResponseDTO.success(ResponseCode.PRODUCT_REGISTER_SUCCESS,product.getId());
         }catch (Exception e){
             log.error(e);
             throw new CustomException(ResponseCode.PRODUCT_REGISTER_FAILED);
@@ -513,6 +513,39 @@ public class ProductService {
 
 
     }
+
+    @Transactional
+    public ResponseDTO deleteProduct(Long productId,Long userId){
+        try{
+
+
+          Optional<Product> opt =   productMapper.SelectProductByIdAndSellerId(productId,userId);
+
+          if(!opt.isPresent()){
+              return ResponseDTO.error(ResponseCode.PRODUCT_NOT_FOUND);
+          }
+          Product product = opt.get();
+            int result = productImageMapper.deleteByProductId(productId);
+            if(result==0){
+                throw new CustomException(ResponseCode.PRODUCT_DELETE_FAILED);
+            }
+
+          int removeResult  =   productMapper.deleteProduct(productId);
+            if(removeResult==0){
+                throw new CustomException(ResponseCode.PRODUCT_DELETE_FAILED);
+
+            }
+
+            return ResponseDTO.success(ResponseCode.PRODUCT_DELETE_SUCCESS);
+
+
+
+        } catch (Exception e) {
+            throw new CustomException(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
 
 
 
