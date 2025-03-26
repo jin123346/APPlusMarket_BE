@@ -27,6 +27,13 @@
              WHERE p.id = #{id}
     </select>
 
+    <select id="SelectProductByIdAndSellerId" resultType="com.aplus.aplusmarket.entity.Product">
+        <!-- SELECT * FROM tb_product WHERE id = #{id} -->
+        SELECT p.*
+        from tb_product AS p
+        WHERE p.id = #{id} and p.seller_id =#{userId}
+    </select>
+
     <select id="SelectProductByIdForModify" parameterType="long" resultType="com.aplus.aplusmarket.entity.Product" >
         <!-- SELECT * FROM tb_product WHERE id = #{id} -->
         SELECT
@@ -62,10 +69,6 @@
             LEFT JOIN tb_product_image AS i
             ON p.id = i.product_id AND i.sequence = 0
         where seller_id = #{userId} AND status = #{status}
-        <if test="lastIndex != null and lastIndex != '' and lastIndex != 0">
-          And p.id &lt; #{lastIndex}
---             <![CDATA[ AND p.id < #{lastIndex} ]]>
-        </if>
         ORDER BY p.created_at asc
         Limit 10
     </select>
@@ -114,9 +117,10 @@
 
     <update id="updateStatus" parameterType="com.aplus.aplusmarket.dto.product.requests.ProductListRequestDTO">
         update tb_product
-        set status = #{status},
+        set
+        status = #{status},
         updated_at = now()
-        <if test="status eq 'Deleted'"> ,deleted_at = now()</if>
+        <if test="status.equals('Deleted')"> , deleted_at = now() </if>
         where id = #{id}
     </update>
 
@@ -158,10 +162,7 @@
     </update>
 
 
-    <!-- DELETE 삭제 기능입니다.-->
-    <delete id="DeleteProduct" parameterType="long">
-        DELETE FROM tb_product WHERE id = #{id}
-    </delete>
+
     <!--상품 페이징 처리해서 가지고 오는 SQL 입니다 이때 첫번재 이미지를 같이 조인해서 가지고 옵니다.    -->
     <select id="SelectProductsPage" resultType="com.aplus.aplusmarket.entity.ProductResponseCard">
         SELECT
@@ -205,4 +206,10 @@
             AND (p.brand = #{brand})
         </if>
     </select>
+
+    <delete id="deleteProduct">
+        delete from tb_product where id = #{productId}
+    </delete>
+
+
 </mapper>

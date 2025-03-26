@@ -6,6 +6,7 @@ import com.aplus.aplusmarket.dto.product.requests.ProductModifyRequestDTO;
 import com.aplus.aplusmarket.dto.product.requests.ProductRequestDTO;
 import com.aplus.aplusmarket.dto.product.response.ProductDTO;
 import com.aplus.aplusmarket.entity.Product;
+import com.aplus.aplusmarket.handler.ResponseCode;
 import com.aplus.aplusmarket.service.ProductService;
 import com.aplus.aplusmarket.service.WishAndRecentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -114,24 +115,43 @@ public class ProductController {
     @GetMapping("/modify/{productId}/{userId}")
     public ResponseEntity modifyProduct(
             @PathVariable(value = "productId") Long productId,
-            @PathVariable(value = "userId") Long userId
+            @PathVariable(value = "userId") Long userId,HttpServletRequest request
             ){
 
-        ResponseDTO responseDTO = productService.selectProductForModify(productId,userId);
+        Long id =(Long)request.getAttribute("id");
+        ResponseDTO responseDTO;
+        if(id == null || userId != id ){
+             responseDTO = ResponseDTO.error(ResponseCode.NOT_AUTHORITY);
+            return ResponseEntity.status(responseDTO.getHttpCode()).body(responseDTO);
+
+        }
+
+         responseDTO = productService.selectProductForModify(productId,userId);
         log.info("조회 결과 {}",responseDTO);
         return ResponseEntity.ok().body(responseDTO);
     }
 
-    @PutMapping("/modify/{productId}/{userId}")
-    public ResponseEntity updateProductForModify( @RequestPart("data") String jsonData,  // ✅ @RequestBody 사용
+    @PostMapping("/modify/{productId}/{userId}")
+    public ResponseEntity updateProductForModify( @RequestPart("data") String jsonData,
                                                   @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages,
             @PathVariable(value = "productId") Long productId,
             @PathVariable(value = "userId") Long userId,HttpServletRequest request){
+
+        log.info("🔥 받은 jsonData = {}", jsonData);
+
+        Long id =(Long)request.getAttribute("id");
+        ResponseDTO responseDTO;
+        if(id == null || userId != id ){
+            responseDTO = ResponseDTO.error(ResponseCode.NOT_AUTHORITY);
+            return ResponseEntity.status(responseDTO.getHttpCode()).body(responseDTO);
+        }
+
         ObjectMapper mapper = new ObjectMapper();
         ProductModifyRequestDTO requestDTO;
         try {
             requestDTO = mapper.readValue(jsonData, ProductModifyRequestDTO.class);
 
+            if(requestDTO.getId() == null){requestDTO.setId(productId);}
             String clientIp = request.getRemoteAddr();
             requestDTO.setRegisterIp(clientIp);
         } catch (JsonProcessingException e) {
@@ -160,5 +180,18 @@ public class ProductController {
         log.info("userid : {}",userId);
 
         return ResponseEntity.ok().body(wishAndRecentService.selectWishLit(userId));
+    }
+
+    @DeleteMapping("/delete/{productId}/{userId}")
+    public ResponseEntity deleteProduct(@PathVariable(value="productId") Long productId,@PathVariable(value="userId") Long userId,HttpServletRequest request){
+        Long requestId = (Long)request.getAttribute("id");
+        log.info("userid : {}",requestId);
+        if(requestId == null || userId != requestId){
+            return ResponseEntity.status(ResponseCode.NOT_AUTHORITY.getHttpStatus()).body(ResponseCode.NOT_AUTHORITY);
+        }
+
+        log.info("관심상품 설정 : {} ,{} ",productId,userId);
+        ResponseDTO responseDTO = productService.deleteProduct(productId,userId);
+        return ResponseEntity.ok().body(responseDTO);
     }
 }

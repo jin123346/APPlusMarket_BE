@@ -10,7 +10,7 @@ spring:
         livereload:
             enabled: true
     datasource:
-        url: jdbc:mysql://43.202.32.28:3306/applusmarket?serverTimezone=Asia/Seoul
+        url: jdbc:mysql://13.209.99.26:3306/applusmarket?serverTimezone=Asia/Seoul
         username: applus
         password: Qwe1234~!
         driver-class-name: com.mysql.cj.jdbc.Driver
@@ -34,7 +34,7 @@ spring:
             enabled: true
             location: uploads/
     kafka:
-        bootstrap-servers: 43.202.32.28:9092
+        bootstrap-servers: 13.209.99.26:9092
         consumer:
             group-id: product-group
             auto-offset-reset: earliest
@@ -57,10 +57,11 @@ spring:
             ack-count: 1
     data:
         mongodb:
-            uri: mongodb://root:Qwe1234~!@43.202.32.28:27017/applus?authSource=admin
+            uri: mongodb://root:Qwe1234~!@13.209.99.26:27017/applus?authSource=admin
         redis:
-            host: 43.202.32.28
+            host: 13.209.99.26
             port: 6379
+            password: Qwe1234~!
             repositories:
                 enabled: true
             lettuce:

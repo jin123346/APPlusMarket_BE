@@ -1,0 +1,13 @@
+{
+  "title": "글제목",
+  "productName": "상품이름",
+  "content" : "글 내용",
+  "price" : 15000000,
+  "sellerId" : "10",
+  "isNegotiable" : false,
+  "isPossibleMeetYou" : false,
+  "category" : "노트북",
+  "brand" : "삼성",
+  "findProductId" : "null",
+  "registerLocation" : "부산 진구"
+}

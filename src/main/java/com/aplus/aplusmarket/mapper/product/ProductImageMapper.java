@@ -14,4 +14,6 @@ public interface ProductImageMapper {
     boolean DeleteProductImageByProductId(Long productId);
     int deleteById(Long id);
     int updateSequence(@Param("itemId") Long itemId, @Param("sequence") int sequence);
+    int deleteByProductId(@Param("productId") Long productId);
+
 }
