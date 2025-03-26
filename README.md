@@ -8,6 +8,7 @@
 ---
 
 ## 🌐 링크
+[API 문서 - restDocs](http://ec2-3-35-170-26.ap-northeast-2.compute.amazonaws.com/docs/index.html)
 - **Backend Repository:** [APPlusMarket_BE](https://github.com/jin123346/APPlusMarket_BE)
 - **Frontend Repository:** [APPlusMarket_Flutter](https://github.com/jin123346/APPlusMarket_Flutter)
 
