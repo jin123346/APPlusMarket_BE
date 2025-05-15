@@ -167,7 +167,7 @@ public class KafkaNotificationConsumer {
 
 
     @KafkaListener(topics = "crawler-search-topic", groupId = "product-group")
-    public void searchConsume(String message) {
+    public void searchConsume(String message,Acknowledgment acknowledgment) {
         System.out.println("Received message: " + message);
 
         // JSON 데이터를 Java 객체로 변환
@@ -177,9 +177,11 @@ public class KafkaNotificationConsumer {
                     .doOnSuccess(products -> {
                         log.info("검색 완료: {}", products.size());
                         crawlStatusService.setCompleted(message); // ✅ Mono가 완료된 후 실행
+                        acknowledgment.acknowledge();
                     })
                     .doOnError(error -> {
                         log.error("Samsung 검색 실패!", error);
+                         crawlStatusService.setCompleted(message);
                         throw new CustomException(ResponseCode.KAFKA_SEARCH_IN_ERROR);
 
                     })
